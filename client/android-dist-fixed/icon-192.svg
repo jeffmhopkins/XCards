@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="192" height="192" rx="32" fill="#0a0a0a"/>
+  <rect x="16" y="16" width="160" height="160" rx="16" fill="url(#gradient)" stroke="#00ffff" stroke-width="2"/>
+  <text x="96" y="110" text-anchor="middle" fill="#00ffff" font-family="Arial, sans-serif" font-size="48" font-weight="bold">x</text>
+  <text x="96" y="140" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="24">Cards</text>
+  <defs>
+    <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00ffff;stop-opacity:0.1"/>
+      <stop offset="100%" style="stop-color:#8b5cf6;stop-opacity:0.1"/>
+    </linearGradient>
+  </defs>
+</svg>

@@ -1,4 +1,4 @@
-# xCards v1.0.0 - Installation Guide
+# xCards v1.0.2 - Installation Guide
 
 ## Quick Start
 

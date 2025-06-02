@@ -62,7 +62,7 @@ export function StudyCard({ card, onAnswer, onExit, currentIndex, totalCards }: 
 
     window.addEventListener('keydown', handleKeyPress);
     return () => window.removeEventListener('keydown', handleKeyPress);
-  }, [onAnswer]);
+  }, [onAnswer, isFlipped]);
 
   const handleCardClick = () => {
     if (!isFlipped) {
@@ -70,7 +70,8 @@ export function StudyCard({ card, onAnswer, onExit, currentIndex, totalCards }: 
       setShowControls(true);
     } else {
       setIsFlipped(false);
-      setShowControls(false); // Hide controls immediately
+      // Keep controls visible when flipping back to question
+      // Controls will only be hidden when user rates the card or moves to next card
     }
   };
 

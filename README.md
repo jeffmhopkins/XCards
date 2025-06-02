@@ -82,7 +82,7 @@ xCards/
 
 ## Version History
 
-### v1.0.0 (Current)
+### v1.0.2 (Current)
 - Complete deck management system
 - Advanced study modes and analytics
 - PWA functionality with offline support

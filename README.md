@@ -1,4 +1,4 @@
-# xCards v1.0.0 - Sci-Fi Flash Card Application
+# xCards v1.0.3 - Sci-Fi Flash Card Application
 
 A comprehensive sci-fi themed flash card application that transforms learning into an immersive cosmic journey with adaptive study experiences and cutting-edge interactive design.
 
@@ -69,7 +69,6 @@ xCards/
 
 - **Storage**: Browser localStorage only
 - **Backup**: Export decks as CSV files
-- **Migration**: Automatic schema updates
 - **Privacy**: All data stays on user's device
 
 ## Development Guidelines
@@ -79,17 +78,6 @@ xCards/
 - Implement responsive design patterns
 - Maintain sci-fi theme consistency
 - Ensure PWA compliance
-
-## Version History
-
-### v1.0.0 (Current)
-- Complete deck management system
-- Advanced study modes and analytics
-- PWA functionality with offline support
-- Sci-fi themed UI with animations
-- Local storage persistence
-- CSV import/export capabilities
-- Mobile-responsive design
 
 ## License
 

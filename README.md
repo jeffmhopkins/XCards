@@ -82,13 +82,7 @@ xCards/
 
 ## Version History
 
-### v1.0.4_fixed (Current)
-- Fixed deck card layout for consistent bottom alignment
-- Card count, status, and Study Now button now align to bottom regardless of description length
-- Improved CSS flexbox layout with proper vertical distribution
-- Enhanced user interface consistency across all deck cards
-
-### v1.0.4
+### v1.0.4 (Current)
 - Fixed CSV import parsing for multiple categories
 - Improved handling of quoted fields with commas
 - Categories like "Math,Basic,Arithmetic" now import correctly

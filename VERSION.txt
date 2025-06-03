@@ -7,6 +7,9 @@ Key Changes in _fixed version:
 - Card count, status, and Study Now button now align to bottom regardless of description length
 - Improved CSS flexbox layout with proper vertical distribution
 - Enhanced user interface consistency across all deck cards
+- Fixed GitHub Pages deployment 404 errors
+- Corrected PWA manifest and service worker paths for GitHub Pages
+- Updated favicon reference to use existing icon file
 
 Previous v1.0.4 Changes:
 - Fixed CSV import parsing for multiple categories
@@ -16,9 +19,9 @@ Previous v1.0.4 Changes:
 
 Build Information:
 - Production build: /dist/ (standard deployment with "/" paths)
-- GitHub Pages build: /docs/ (deployment with "/XCards/" paths)
+- GitHub Pages build: /docs/ (deployment with "/XCards/" paths - fixed)
 - Both builds include PWA support and offline functionality
-- Latest UI improvements for deck card alignment
+- GitHub Pages deployment now works without 404 errors
 
 Author: Jeff M Hopkins
 Repository: https://github.com/jeffmhopkins/xCards

@@ -1,4 +1,4 @@
-# xCards v1.0.4 - Installation Guide
+# xCards v1.0.3 - Installation Guide
 
 ## Quick Start
 
@@ -11,7 +11,7 @@
 1. **Extract the backup files**
    ```bash
    # Extract all files to your project directory
-   cp -r backup_v1.0.4/* your-project-folder/
+   cp -r backup_v1.0.3/* your-project-folder/
    cd your-project-folder
    ```
 

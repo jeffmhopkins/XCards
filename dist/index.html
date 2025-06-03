@@ -6,7 +6,7 @@
     <title>xCards - Sci-Fi Flash Cards</title>
     
     <!-- PWA Configuration -->
-    <link rel="manifest" href="/XCards/manifest.json" />
+    <link rel="manifest" href="./manifest.json" />
     <meta name="theme-color" content="#00ffff" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -22,12 +22,27 @@
     <meta property="og:type" content="website" />
     
     <!-- Favicon -->
-    <link rel="icon" type="image/svg+xml" href="/XCards/vite.svg" />
-    <script type="module" crossorigin src="/XCards/assets/index-DdqlHiUk.js"></script>
-    <link rel="stylesheet" crossorigin href="/XCards/assets/index-C-twKv5j.css">
+    <link rel="icon" type="image/svg+xml" href="./vite.svg" />
+    <script type="module" crossorigin src="./assets/index-B7s14_2X.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BN9GU5FQ.css">
   </head>
   <body>
     <div id="root"></div>
+    
+    <!-- Service Worker Registration -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('./sw.js')
+            .then(function(registration) {
+              console.log('ServiceWorker registration successful with scope: ', registration.scope);
+            }, function(err) {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
+    </script>
+    
     <!-- This is a replit script which adds a banner on the top of the page when opened in development mode outside the replit environment -->
     <script type="text/javascript" src="https://replit.com/public/js/replit-dev-banner.js"></script>
   </body>

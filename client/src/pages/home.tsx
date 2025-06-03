@@ -47,6 +47,7 @@ export default function Home() {
   });
   const [studyModeSelection, setStudyModeSelection] = useState<{ deck: Deck; mode: StudyMode } | null>(null);
   const [currentStudyDeck, setCurrentStudyDeck] = useState<Deck | null>(null);
+  const [studySessionCards, setStudySessionCards] = useState<Flashcard[]>([]);
   const [currentCardIndex, setCurrentCardIndex] = useState(0);
   const [studySessionStats, setStudySessionStats] = useState({
     correct: 0,
@@ -241,6 +242,7 @@ export default function Home() {
     
     // Clear all state immediately
     setCurrentStudyDeck(null);
+    setStudySessionCards([]);
     setCurrentCardIndex(0);
     setStudySessionStats({ correct: 0, incorrect: 0 });
     setPendingViewChange(null);
@@ -286,11 +288,11 @@ export default function Home() {
     // Check if we have a valid study mode selection or use selected deck
     let deckToStudy;
     if (studyModeSelection?.deck) {
-      deckToStudy = { ...studyModeSelection.deck, cards };
+      deckToStudy = studyModeSelection.deck;
     } else if (selectedDeckId) {
       const selectedDeck = decks.find(deck => deck.id === selectedDeckId);
       if (selectedDeck) {
-        deckToStudy = { ...selectedDeck, cards };
+        deckToStudy = selectedDeck;
       } else {
         showAlert('Error', 'No deck selected for study!');
         return;
@@ -301,6 +303,7 @@ export default function Home() {
     }
 
     setCurrentStudyDeck(deckToStudy);
+    setStudySessionCards(cards);
     setCurrentCardIndex(0);
     setStudySessionStats({ correct: 0, incorrect: 0 });
     setStudyModeSelection(null);
@@ -312,7 +315,9 @@ export default function Home() {
   };
 
   const handleStudyAnswer = (difficulty: 'easy' | 'good' | 'hard') => {
-    if (!currentStudyDeck) return;
+    if (!currentStudyDeck || studySessionCards.length === 0) return;
+
+    const currentCard = studySessionCards[currentCardIndex];
 
     // Calculate credit: easy = 1, good = 0.75, hard = 0
     const creditAmount = difficulty === 'easy' ? 1 : difficulty === 'good' ? 0.75 : 0;
@@ -324,11 +329,11 @@ export default function Home() {
     };
     setStudySessionStats(updatedStats);
 
-    // Update card statistics
+    // Update card statistics in the main deck
     const updatedDecks = decks.map(deck => {
       if (deck.id === currentStudyDeck.id) {
-        const updatedCards = deck.cards.map((card, index) => {
-          if (index === currentCardIndex) {
+        const updatedCards = deck.cards.map(card => {
+          if (card.id === currentCard.id) {
             const updatedCard = {
               ...card,
               reviewCount: card.reviewCount + 1,
@@ -365,20 +370,35 @@ export default function Home() {
     setDecks(updatedDecks);
     LocalStorage.saveDecks(updatedDecks);
 
+    // Update the study session cards with the new difficulty
+    const updatedStudySessionCards = studySessionCards.map(card => {
+      if (card.id === currentCard.id) {
+        return {
+          ...card,
+          reviewCount: card.reviewCount + 1,
+          correctCount: card.correctCount + creditAmount,
+          incorrectCount: card.incorrectCount + (isCorrect ? 0 : 1),
+          lastReviewed: new Date(),
+          difficulty,
+        };
+      }
+      return card;
+    });
+    setStudySessionCards(updatedStudySessionCards);
+
     // Move to next card or finish session
-    if (currentCardIndex < currentStudyDeck.cards.length - 1) {
+    if (currentCardIndex < studySessionCards.length - 1) {
       setCurrentCardIndex(currentCardIndex + 1);
-      setCurrentStudyDeck(updatedDecks.find(d => d.id === currentStudyDeck.id) || currentStudyDeck);
     } else {
       // Session complete
       const newSession: StudySession = {
         deckId: currentStudyDeck.id,
         startTime: new Date(),
         endTime: new Date(),
-        cardsStudied: currentStudyDeck.cards.length,
+        cardsStudied: studySessionCards.length,
         correctAnswers: updatedStats.correct,
         incorrectAnswers: updatedStats.incorrect,
-        sessionAccuracy: Math.round((updatedStats.correct / currentStudyDeck.cards.length) * 100),
+        sessionAccuracy: Math.round((updatedStats.correct / studySessionCards.length) * 100),
       };
 
       const updatedSessions = [...sessions, newSession];
@@ -394,6 +414,7 @@ export default function Home() {
       });
       setIsSessionCompleteModalOpen(true);
       setCurrentStudyDeck(null);
+      setStudySessionCards([]);
     }
   };
 
@@ -556,7 +577,7 @@ export default function Home() {
       );
     }
 
-    if (currentStudyDeck.cards.length === 0) {
+    if (studySessionCards.length === 0) {
       return (
         <div className="text-center py-20">
           <p className="text-text-secondary text-lg">This deck has no cards to study</p>
@@ -571,7 +592,7 @@ export default function Home() {
           <div className="flex justify-center space-x-8 text-sm">
             <div className="text-center">
               <div className="text-2xl font-bold text-cyan-neon">{currentCardIndex + 1}</div>
-              <div className="text-text-secondary">of {currentStudyDeck.cards.length}</div>
+              <div className="text-text-secondary">of {studySessionCards.length}</div>
             </div>
             <div className="text-center">
               <div className="text-2xl font-bold text-green-400">{studySessionStats.correct}</div>
@@ -585,11 +606,11 @@ export default function Home() {
         </div>
 
         <StudyCard
-          card={currentStudyDeck.cards[currentCardIndex]}
+          card={studySessionCards[currentCardIndex]}
           onAnswer={handleStudyAnswer}
           onExit={handleExitStudy}
           currentIndex={currentCardIndex}
-          totalCards={currentStudyDeck.cards.length}
+          totalCards={studySessionCards.length}
         />
       </>
     );

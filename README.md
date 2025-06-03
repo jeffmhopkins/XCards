@@ -1,7 +1,7 @@
-# xCards v1.0.4 - Sci-Fi Flash Card Application
+# xCards v1.0.4 - Flash Card Application
 - Live at https://jeffmhopkins.github.io/XCards/
 
-A comprehensive sci-fi themed flash card application that transforms learning into an immersive cosmic journey with adaptive study experiences and cutting-edge interactive design.
+A comprehensive flash card application that transforms learning into an immersive adaptive study experiences and cutting-edge interactive design.
 
 ## Features
 

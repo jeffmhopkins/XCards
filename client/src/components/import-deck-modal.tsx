@@ -32,6 +32,37 @@ export function ImportDeckModal({ isOpen, onClose, onImport }: ImportDeckModalPr
     }
   };
 
+  const parseCsvLine = (line: string): string[] => {
+    const result: string[] = [];
+    let current = '';
+    let inQuotes = false;
+    
+    for (let i = 0; i < line.length; i++) {
+      const char = line[i];
+      
+      if (char === '"') {
+        if (inQuotes && line[i + 1] === '"') {
+          // Handle escaped quotes
+          current += '"';
+          i++; // Skip next quote
+        } else {
+          // Toggle quote state
+          inQuotes = !inQuotes;
+        }
+      } else if (char === ',' && !inQuotes) {
+        // End of field
+        result.push(current.trim());
+        current = '';
+      } else {
+        current += char;
+      }
+    }
+    
+    // Add the last field
+    result.push(current.trim());
+    return result;
+  };
+
   const parseCsvToDeck = (csvData: string, name: string, description: string): Deck | null => {
     try {
       const lines = csvData.trim().split('\n');
@@ -39,7 +70,7 @@ export function ImportDeckModal({ isOpen, onClose, onImport }: ImportDeckModalPr
         throw new Error('CSV must contain at least a header row and one data row');
       }
 
-      const headers = lines[0].split(',').map(h => h.trim().toLowerCase());
+      const headers = parseCsvLine(lines[0]).map(h => h.trim().toLowerCase());
       const questionIndex = headers.findIndex(h => h.includes('question') || h.includes('front'));
       const answerIndex = headers.findIndex(h => h.includes('answer') || h.includes('back'));
       const categoriesIndex = headers.findIndex(h => h.includes('categories') || h.includes('category') || h.includes('tags'));
@@ -52,7 +83,7 @@ export function ImportDeckModal({ isOpen, onClose, onImport }: ImportDeckModalPr
       const now = new Date();
 
       for (let i = 1; i < lines.length; i++) {
-        const values = lines[i].split(',').map(v => v.trim().replace(/^"(.*)"$/, '$1'));
+        const values = parseCsvLine(lines[i]);
         
         const maxIndex = Math.max(questionIndex, answerIndex, categoriesIndex === -1 ? 0 : categoriesIndex);
         if (values.length >= maxIndex + 1) {

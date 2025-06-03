@@ -1,4 +1,4 @@
-# xCards v1.0.3 - Sci-Fi Flash Card Application
+# xCards v1.0.4 - Sci-Fi Flash Card Application
 
 A comprehensive sci-fi themed flash card application that transforms learning into an immersive cosmic journey with adaptive study experiences and cutting-edge interactive design.
 
@@ -9,7 +9,7 @@ A comprehensive sci-fi themed flash card application that transforms learning in
 - **Smart Study Modes**: Sequential, shuffled, and difficulty-based study options
 - **Advanced Analytics**: Detailed statistics and progress tracking
 - **Category System**: Organize cards by subject areas
-- **Import/Export**: CSV support for data portability
+- **Import/Export**: Enhanced CSV support with proper multi-category parsing
 - **PWA Ready**: Progressive Web App for mobile installation
 
 ### Study Experience
@@ -37,6 +37,8 @@ xCards/
 │   │   └── pages/         # Main application pages
 ├── server/                # Express server (for development)
 ├── shared/                # Shared types and schemas
+├── dist/                  # Production build for standard deployment
+├── docs/                  # GitHub Pages build with /XCards/ paths
 └── Configuration files
 ```
 
@@ -54,7 +56,11 @@ xCards/
 
 3. **Build for Production**
    ```bash
-   npm run build
+   # For standard deployment
+   npx vite build --config vite.config.dist.ts
+   
+   # For GitHub Pages
+   npx vite build --config vite.config.docs.ts
    ```
 
 ## Key Technologies
@@ -82,7 +88,14 @@ xCards/
 
 ## Version History
 
-### v1.0.3 (Current)
+### v1.0.4 (Current)
+- Fixed CSV import parsing for multiple categories
+- Improved handling of quoted fields with commas
+- Categories like "Math,Basic,Arithmetic" now import correctly
+- Updated PWA configuration for GitHub Pages deployment
+- Enhanced build system with separate dist/docs outputs
+
+### v1.0.3
 - Enhanced filtering system with cascading filters
 - Categories → Review Recency → Mastery Level filter order
 - Dynamic filter counts that update based on selections

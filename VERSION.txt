@@ -1,0 +1,17 @@
+xCards v1.0.4
+
+Release Date: June 3, 2025
+
+Key Changes:
+- Fixed CSV import parsing for multiple categories
+- Improved handling of quoted fields with commas
+- Updated PWA configuration for GitHub Pages deployment
+- Enhanced build system with separate dist/docs outputs
+
+Build Information:
+- Production build: /dist/ (standard deployment with "/" paths)
+- GitHub Pages build: /docs/ (deployment with "/XCards/" paths)
+- Both builds include PWA support and offline functionality
+
+Author: Jeff M Hopkins
+Repository: https://github.com/jeffmhopkins/xCards

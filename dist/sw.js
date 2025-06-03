@@ -1,8 +1,8 @@
 const CACHE_NAME = 'xcards-v2';
 const urlsToCache = [
-  './',
-  './manifest.json',
-  './icon-192.png'
+  '/',
+  '/manifest.json',
+  '/icon-192.svg'
 ];
 
 self.addEventListener('install', event => {
@@ -37,7 +37,7 @@ self.addEventListener('fetch', event => {
         return response || fetch(event.request).catch(() => {
           // If offline and no cache, return a basic offline page
           if (event.request.destination === 'document') {
-            return caches.match('./');
+            return caches.match('/');
           }
         });
       })

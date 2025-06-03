@@ -1,4 +1,5 @@
 # xCards v1.0.5 - Flash Card Application
+- Running here: https://jeffmhopkins.github.io/XCards/ from /docs/
 
 A comprehensive flash card application with adaptive study experiences and modern interactive design for effective learning.
 

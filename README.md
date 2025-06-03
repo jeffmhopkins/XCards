@@ -1,7 +1,6 @@
-# xCards v1.0.4 - Flash Card Application
-- Live at https://jeffmhopkins.github.io/XCards/
+# xCards v1.0.5 - Sci-Fi Flash Card Application
 
-A comprehensive flash card application that transforms learning into an immersive adaptive study experiences and cutting-edge interactive design.
+A comprehensive sci-fi themed flash card application that transforms learning into an immersive cosmic journey with adaptive study experiences and cutting-edge interactive design.
 
 ## Features
 
@@ -89,7 +88,16 @@ xCards/
 
 ## Version History
 
-### v1.0.4 (Current)
+### v1.0.5 (Current)
+- Updated navigation to icon-only buttons with glow effects
+- Simplified scoring system: binary points (0 for unknown, 1 for known)
+- Fixed card flip animation text behavior consistency
+- Changed Good button color to lime (yellow-green) for better progression
+- Enhanced PWA configuration for GitHub Pages deployment
+- Fixed service worker registration for subdirectory deployment
+- Complete deployment readiness for both generic hosting and GitHub Pages
+
+### v1.0.4
 - Fixed CSV import parsing for multiple categories
 - Improved handling of quoted fields with commas
 - Categories like "Math,Basic,Arithmetic" now import correctly

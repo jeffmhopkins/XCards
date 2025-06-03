@@ -38,7 +38,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </h2>
           </div>
           <p className="text-sm text-text-secondary font-mono mb-2">
-            Version 1.0.4
+            Version 1.0.5
           </p>
           <p className="text-text-secondary text-lg">
             A sci-fi themed flashcard application for immersive and adaptive learning

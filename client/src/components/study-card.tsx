@@ -137,12 +137,8 @@ export function StudyCard({ card, onAnswer, onExit, currentIndex, totalCards }: 
                 </p>
               </div>
               <p className="text-sm text-text-secondary h-5 mt-4">
-                {!isFlipped ? (
-                  <>
-                    <span className="md:hidden">Tap to reveal answer</span>
-                    <span className="hidden md:inline">Click or press Space to reveal answer</span>
-                  </>
-                ) : ""}
+                <span className="md:hidden">Tap to reveal answer</span>
+                <span className="hidden md:inline">Click or press Space to reveal answer</span>
               </p>
             </div>
           </div>
@@ -183,7 +179,7 @@ export function StudyCard({ card, onAnswer, onExit, currentIndex, totalCards }: 
           </button>
           <button
             onClick={() => handleAnswer('good')}
-            className="px-6 py-3 bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 rounded-xl hover:bg-yellow-500/30 transition-all duration-300 relative"
+            className="px-6 py-3 bg-lime-500/20 border border-lime-500/30 text-lime-400 rounded-xl hover:bg-lime-500/30 transition-all duration-300 relative"
           >
             <span className="block">Good</span>
             <span className="text-xs opacity-60 hidden md:inline">Press 2</span>

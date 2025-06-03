@@ -319,8 +319,8 @@ export default function Home() {
 
     const currentCard = studySessionCards[currentCardIndex];
 
-    // Calculate credit: easy = 1, good = 0.75, hard = 0
-    const creditAmount = difficulty === 'easy' ? 1 : difficulty === 'good' ? 0.75 : 0;
+    // Calculate credit: easy = 1, good = 1, hard = 0
+    const creditAmount = difficulty === 'easy' ? 1 : difficulty === 'good' ? 1 : 0;
     const isCorrect = difficulty !== 'hard';
     
     const updatedStats = {

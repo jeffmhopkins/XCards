@@ -1,118 +1,122 @@
-# xCards v1.0.3 - Installation Guide
+# xCards v1.0.5 - Installation Guide
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- Git for cloning the repository
+- Modern web browser with PWA support
 
 ## Quick Start
 
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn package manager
-
-### Setup Instructions
-
-1. **Extract the backup files**
-   ```bash
-   # Extract all files to your project directory
-   cp -r backup_v1.0.3/* your-project-folder/
-   cd your-project-folder
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   ```
-
-3. **Start the development server**
-   ```bash
-   npm run dev
-   ```
-
-4. **Access the application**
-   - Open your browser to `http://localhost:5000`
-   - The app will automatically create a sample deck on first visit
-
-## Production Deployment
-
-### Static Hosting (Recommended)
-Since xCards is completely client-side, you can deploy to any static hosting service:
-
-1. **Build the production version**
-   ```bash
-   npm run build
-   ```
-
-2. **Deploy either folder** to your hosting service:
-   - Use `/dist/` folder for general deployment
-   - Use `/docs/` folder for GitHub Pages (enables Pages from docs folder)
-   - Compatible with: Netlify, Vercel, GitHub Pages, any static hosting
-
-### Self-Hosted Server
-You can also run the included Express server:
+### 1. Clone from GitHub
 
 ```bash
-npm start
+git clone https://github.com/jeffmhopkins/XCards.git
+cd XCards
 ```
 
-## Configuration
+### 2. Install Dependencies
 
-### Environment Variables
-No environment variables required - the app runs entirely in the browser.
+```bash
+npm install
+```
 
-### PWA Installation
-Users can install xCards as a Progressive Web App:
-- Chrome: "Install xCards" button in address bar
-- Mobile: "Add to Home Screen" option
+### 3. Development Mode
 
-## Data Storage
+```bash
+npm run dev
+```
 
-- **Local Storage**: All data is stored in browser localStorage
-- **Backup**: Users can export their decks as CSV files
-- **Privacy**: No data is sent to external servers
+The application will be available at `http://localhost:5000`
+
+### 4. Production Build
+
+```bash
+npm run build
+```
+
+This creates optimized files in the `dist/` folder for deployment.
+
+## Deployment Options
+
+### Option 1: GitHub Pages
+
+The `docs/` folder is pre-configured for GitHub Pages deployment:
+
+1. Push the repository to GitHub
+2. Go to repository Settings → Pages
+3. Set source to "Deploy from a branch"
+4. Select "main" branch and "/docs" folder
+5. Your app will be available at `https://username.github.io/XCards/`
+
+### Option 2: Generic Static Hosting
+
+Use the `dist/` folder for any static hosting service:
+
+- Netlify: Drag and drop the `dist/` folder
+- Vercel: Deploy the `dist/` folder
+- Apache/Nginx: Copy `dist/` contents to web root
+- CDN: Upload `dist/` contents to your CDN
+
+### Option 3: Self-Hosted
+
+For your own server:
+
+```bash
+# After building
+cd dist
+python3 -m http.server 8080
+# Or use any static file server
+```
+
+## PWA Installation
+
+Once deployed, users can install the app as a PWA:
+
+1. Visit the deployed URL in a mobile browser
+2. Look for "Add to Home Screen" prompt
+3. Or use browser menu → "Install App"
+
+## Development Structure
+
+```
+xCards/
+├── client/               # React frontend
+│   ├── public/          # Static assets
+│   ├── src/
+│   │   ├── components/  # UI components
+│   │   ├── lib/        # Utilities
+│   │   └── pages/      # Application pages
+├── server/              # Development server
+├── shared/              # Shared types
+├── dist/               # Production build (generic)
+└── docs/               # GitHub Pages build
+```
+
+## Environment Configuration
+
+No environment variables required - the app runs entirely client-side with localStorage.
 
 ## Troubleshooting
 
-### Common Issues
+### Build Issues
+- Ensure Node.js 18+ is installed
+- Clear `node_modules` and reinstall: `rm -rf node_modules && npm install`
 
-1. **Blank screen on startup**
-   - Clear browser cache and localStorage
-   - Check browser console for errors
+### PWA Issues
+- Check that HTTPS is enabled (required for PWA)
+- Verify service worker registration in browser dev tools
 
-2. **PWA not installing**
-   - Ensure HTTPS is enabled (required for PWA)
-   - Check that manifest.json is accessible
+### GitHub Pages Issues
+- Ensure repository is public or has Pages enabled
+- Check that `/docs` folder exists and contains built files
+- Verify paths use `/XCards/` prefix in docs folder
 
-3. **Import/Export not working**
-   - Verify browser supports File API
-   - Check file format matches expected CSV structure
+## Browser Support
 
-### Browser Support
 - Chrome 90+
 - Firefox 88+
 - Safari 14+
 - Edge 90+
 
-## File Structure
-
-```
-project/
-├── client/           # React frontend
-├── server/           # Express server (dev only)
-├── shared/           # Shared types
-├── package.json      # Dependencies
-├── vite.config.ts    # Build configuration
-└── tailwind.config.ts # Styling configuration
-```
-
-## Development
-
-### Available Scripts
-- `npm run dev` - Start development server
-- `npm run build` - Build for production
-- `npm run preview` - Preview production build
-
-### Key Dependencies
-- React 18
-- TypeScript 5
-- Vite 5
-- Tailwind CSS 3
-- Radix UI components
-
-For support or questions, refer to the README.md file or the project repository.
+PWA features require modern browser support for service workers and web app manifests.

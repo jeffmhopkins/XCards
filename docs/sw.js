@@ -2,7 +2,7 @@ const CACHE_NAME = 'xcards-v2';
 const urlsToCache = [
   '/XCards/',
   '/XCards/manifest.json',
-  '/XCards/icon-192.png'
+  '/XCards/icon-192.svg'
 ];
 
 self.addEventListener('install', event => {

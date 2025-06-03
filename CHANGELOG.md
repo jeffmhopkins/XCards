@@ -65,7 +65,7 @@
 - **Study Modes**: Sequential, shuffled, and difficulty-based study
 - **Analytics**: Comprehensive progress tracking and statistics
 - **PWA Support**: Full Progressive Web App functionality with offline support
-- **Sci-Fi Theme**: Immersive space-themed user interface with animations
+- **Modern Theme**: Clean user interface with animations
 - **Data Persistence**: Local storage for complete client-side operation
 - **Import/Export**: CSV file support for data portability
 - **Responsive Design**: Mobile-first responsive design

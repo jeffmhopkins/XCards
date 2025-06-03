@@ -51,6 +51,9 @@ export default {
           "4": "hsl(var(--chart-4))",
           "5": "hsl(var(--chart-5))",
         },
+        'cyan-neon': 'hsl(var(--cyan-neon))',
+        'purple-neon': 'hsl(var(--purple-neon))',
+        'magenta-neon': 'hsl(var(--magenta-neon))',
         sidebar: {
           DEFAULT: "hsl(var(--sidebar-background))",
           foreground: "hsl(var(--sidebar-foreground))",

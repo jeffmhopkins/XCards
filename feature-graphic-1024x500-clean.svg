@@ -1,0 +1,98 @@
+<svg width="1024" height="500" viewBox="0 0 1024 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="mainGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#00bcd4;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9c27b0;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="cardGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.9" />
+      <stop offset="100%" style="stop-color:#e0e0ff;stop-opacity:0.8" />
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge> 
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Main background -->
+  <rect width="1024" height="500" fill="url(#mainGradient)"/>
+  
+  <!-- Decorative circuit pattern -->
+  <g opacity="0.15" stroke="#ffffff" stroke-width="2" fill="none">
+    <path d="M0,150 L300,150 L300,200 L600,200 L600,250"/>
+    <path d="M1024,300 L724,300 L724,250 L424,250 L424,200"/>
+    <circle cx="300" cy="150" r="8" fill="#ffffff" opacity="0.3"/>
+    <circle cx="600" cy="200" r="8" fill="#ffffff" opacity="0.3"/>
+    <circle cx="724" cy="300" r="8" fill="#ffffff" opacity="0.3"/>
+    <circle cx="424" cy="250" r="8" fill="#ffffff" opacity="0.3"/>
+  </g>
+  
+  <!-- Left side logo/icon area -->
+  <g transform="translate(150, 180)">
+    <!-- Main rounded square -->
+    <rect x="0" y="0" width="140" height="140" rx="20" ry="20" fill="url(#cardGradient)" filter="url(#glow)"/>
+    <!-- X symbol -->
+    <g stroke="#000000" stroke-width="8" stroke-linecap="round">
+      <line x1="35" y1="35" x2="105" y2="105"/>
+      <line x1="105" y1="35" x2="35" y2="105"/>
+    </g>
+  </g>
+  
+  <!-- Center card showcase -->
+  <g transform="translate(400, 120)">
+    <!-- Card stack with perspective -->
+    <rect x="20" y="30" width="180" height="120" rx="12" fill="rgba(255,255,255,0.2)" transform="rotate(-3)"/>
+    <rect x="10" y="20" width="180" height="120" rx="12" fill="rgba(255,255,255,0.4)" transform="rotate(-1.5)"/>
+    <rect x="0" y="10" width="180" height="120" rx="12" fill="url(#cardGradient)" stroke="#ffffff" stroke-width="2" filter="url(#glow)"/>
+    
+    <!-- Card elements (abstract shapes) -->
+    <rect x="20" y="40" width="140" height="8" rx="4" fill="rgba(0,0,0,0.2)"/>
+    <rect x="20" y="55" width="100" height="6" rx="3" fill="rgba(0,0,0,0.15)"/>
+    <rect x="20" y="68" width="120" height="6" rx="3" fill="rgba(0,0,0,0.15)"/>
+    
+    <!-- Progress indicators -->
+    <rect x="20" y="90" width="80" height="6" rx="3" fill="rgba(0,0,0,0.1)"/>
+    <rect x="20" y="90" width="60" height="6" rx="3" fill="#00bcd4"/>
+    
+    <!-- Feature dots -->
+    <circle cx="30" cy="110" r="6" fill="#00bcd4"/>
+    <circle cx="50" cy="110" r="6" fill="#667eea"/>
+    <circle cx="70" cy="110" r="6" fill="#9c27b0"/>
+    <circle cx="90" cy="110" r="6" fill="#00bcd4"/>
+  </g>
+  
+  <!-- Right side floating elements -->
+  <g transform="translate(700, 150)">
+    <!-- Floating cards -->
+    <rect x="0" y="0" width="80" height="50" rx="8" fill="rgba(255,255,255,0.6)" transform="rotate(15)"/>
+    <rect x="40" y="60" width="80" height="50" rx="8" fill="rgba(255,255,255,0.5)" transform="rotate(-10)"/>
+    <rect x="80" y="120" width="80" height="50" rx="8" fill="rgba(255,255,255,0.7)" transform="rotate(5)"/>
+  </g>
+  
+  <!-- Abstract learning symbols -->
+  <g transform="translate(800, 250)" opacity="0.6">
+    <!-- Brain/neural network pattern -->
+    <circle cx="0" cy="0" r="30" fill="none" stroke="#ffffff" stroke-width="2"/>
+    <circle cx="-15" cy="-10" r="4" fill="#ffffff"/>
+    <circle cx="15" cy="-10" r="4" fill="#ffffff"/>
+    <circle cx="0" cy="10" r="4" fill="#ffffff"/>
+    <path d="M-15,-10 Q0,-20 15,-10 M-15,-10 Q0,0 15,-10 M-15,-10 L0,10 M15,-10 L0,10" stroke="#ffffff" stroke-width="1" fill="none"/>
+  </g>
+  
+  <!-- Bottom decorative elements -->
+  <g transform="translate(0, 400)" opacity="0.2">
+    <rect x="100" y="0" width="200" height="4" rx="2" fill="#ffffff"/>
+    <rect x="400" y="0" width="150" height="4" rx="2" fill="#ffffff"/>
+    <rect x="650" y="0" width="250" height="4" rx="2" fill="#ffffff"/>
+  </g>
+  
+  <!-- Corner accent elements -->
+  <polygon points="0,0 60,0 30,30" fill="rgba(255,255,255,0.3)"/>
+  <polygon points="1024,0 964,0 994,30" fill="rgba(255,255,255,0.3)"/>
+  <polygon points="0,500 60,500 30,470" fill="rgba(255,255,255,0.3)"/>
+  <polygon points="1024,500 964,500 994,470" fill="rgba(255,255,255,0.3)"/>
+</svg>

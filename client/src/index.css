@@ -24,12 +24,13 @@
   --ring: 240 4.9% 83.9%;
   --radius: 0.5rem;
   
-  /* Sci-fi custom colors */
+  /* Modern custom colors */
   --space: 240 33% 6%;
   --void: 240 29% 17%;
   --panel: 225 20% 20%;
   --cyan-neon: 180 100% 50%;
   --purple-neon: 258 90% 66%;
+  --magenta-neon: 219 95% 58%;
   --text-primary: 210 40% 92%;
   --text-secondary: 215 16% 65%;
 }
@@ -102,6 +103,56 @@
   
   .neon-purple-glow {
     box-shadow: 0 0 20px rgba(124, 58, 237, 0.3);
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  @keyframes floatRandom0 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(30vw, -20vh); }
+    50% { transform: translate(-15vw, 35vh); }
+    75% { transform: translate(25vw, 15vh); }
+  }
+  @keyframes floatRandom1 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-25vw, 30vh); }
+    50% { transform: translate(40vw, -10vh); }
+    75% { transform: translate(-10vw, -25vh); }
+  }
+  @keyframes floatRandom2 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(20vw, 25vh); }
+    50% { transform: translate(-30vw, -15vh); }
+    75% { transform: translate(35vw, -30vh); }
+  }
+  @keyframes floatRandom3 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-35vw, -20vh); }
+    50% { transform: translate(15vw, 40vh); }
+    75% { transform: translate(-20vw, 10vh); }
+  }
+  @keyframes floatRandom4 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(40vw, 20vh); }
+    50% { transform: translate(-20vw, -30vh); }
+    75% { transform: translate(10vw, 35vh); }
+  }
+  @keyframes floatRandom5 {
+    0%, 100% { transform: translate(0, 0); }
+    25% { transform: translate(-15vw, 35vh); }
+    50% { transform: translate(35vw, -25vh); }
+    75% { transform: translate(-40vw, 5vh); }
   }
 }
 

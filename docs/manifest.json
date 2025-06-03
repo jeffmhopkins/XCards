@@ -1,14 +1,17 @@
 {
   "name": "xCards",
   "short_name": "xCards",
-  "description": "A sci-fi themed flashcard application for immersive and adaptive learning",
+  "description": "A modern flashcard application for effective learning",
   "start_url": "/XCards/",
   "display": "standalone",
   "background_color": "#0a0a0a",
   "theme_color": "#00ffff",
   "orientation": "portrait-primary",
   "scope": "/XCards/",
-  "categories": ["education", "productivity"],
+  "categories": [
+    "education",
+    "productivity"
+  ],
   "icons": [
     {
       "src": "/XCards/icon-192.png",
@@ -18,9 +21,9 @@
     },
     {
       "src": "/XCards/icon-192.png",
-      "sizes": "192x192",
+      "sizes": "512x512",
       "type": "image/png",
-      "purpose": "maskable"
+      "purpose": "any"
     }
   ]
 }

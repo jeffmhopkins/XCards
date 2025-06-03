@@ -16,6 +16,7 @@ import { AlertModal } from '@/components/alert-modal';
 import { ConfirmationModal } from '../components/confirmation-modal';
 import { ExitStudyModal } from '@/components/exit-study-modal';
 import { AboutModal } from '@/components/about-modal';
+import { AnimatedBackground } from '@/components/animated-background';
 import { LocalStorage } from '@/lib/storage';
 import { Deck, StudySession, AppStats, ViewType, CreateDeckData, CreateCardData, Flashcard } from '@/lib/types';
 
@@ -559,7 +560,7 @@ export default function Home() {
       return (
         <div className="text-center py-20">
           <div className="inline-block p-6 glass-effect rounded-3xl holographic mb-8 animate-float">
-            <BookOpen className="w-16 h-16 mx-auto text-purple-neon" />
+            <Brain className="w-16 h-16 mx-auto text-purple-neon" />
           </div>
           <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-cyan-500 bg-clip-text text-transparent">
             Ready to Study
@@ -628,7 +629,7 @@ export default function Home() {
       return (
         <div className="text-center py-20">
           <div className="inline-block p-6 glass-effect rounded-3xl holographic mb-8 animate-float">
-            <TrendingUp className="w-16 h-16 mx-auto text-purple-neon" />
+            <TrendingUp className="w-16 h-16 mx-auto text-magenta-neon" />
           </div>
           <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-cyan-500 bg-clip-text text-transparent">
             Gather Statistics
@@ -897,27 +898,30 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      {/* Background Effects */}
-      <div className="fixed inset-0 opacity-20 pointer-events-none">
-        <div className="absolute top-1/4 left-1/4 w-32 h-32 bg-cyan-500 rounded-full blur-3xl animate-float"></div>
-        <div className="absolute top-3/4 right-1/4 w-24 h-24 bg-purple-600 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }}></div>
-        <div className="absolute bottom-1/4 left-1/3 w-20 h-20 bg-cyan-500 rounded-full blur-2xl animate-float" style={{ animationDelay: '2s' }}></div>
-      </div>
+      {/* Animated Background */}
+      <AnimatedBackground />
 
       {/* Header */}
       <header className="relative z-10 p-6">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <button 
-            onClick={() => setIsAboutModalOpen(true)}
-            className="flex items-center space-x-3 group hover:scale-105 transition-transform duration-300"
-          >
-            <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg shadow-lg shadow-cyan-500/20 flex items-center justify-center group-hover:shadow-lg group-hover:shadow-cyan-500/40 transition-all duration-300">
-              <span className="text-black font-bold text-lg">X</span>
-            </div>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-purple-600 bg-clip-text text-transparent">
-              xCards
-            </h1>
-          </button>
+          <div className="flex items-center space-x-3 group">
+            <button 
+              onClick={() => setIsAboutModalOpen(true)}
+              className="hover:scale-105 transition-transform duration-300"
+            >
+              <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-purple-600 rounded-lg shadow-lg shadow-cyan-500/20 flex items-center justify-center hover:shadow-lg hover:shadow-cyan-500/40 transition-all duration-300">
+                <span className="text-black font-bold text-lg">X</span>
+              </div>
+            </button>
+            <button
+              onClick={() => setCurrentView('decks')}
+              className="hover:scale-105 transition-transform duration-300"
+            >
+              <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-purple-600 bg-clip-text text-transparent">
+                xCards
+              </h1>
+            </button>
+          </div>
           
           <ViewSelector 
             currentView={currentView} 

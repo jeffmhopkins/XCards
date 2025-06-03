@@ -30,32 +30,13 @@ export function StudyCard({ card, onAnswer, onExit, currentIndex, totalCards }: 
           handleCardClick();
           break;
         case 'Digit1':
-          // For keyboard shortcuts, reset visual state and call onAnswer with delay to ensure proper card advancement
-          setIsFlipped(false);
-          setShowControls(false);
-          setContentOpacity(0);
-          setTimeout(() => {
-            onAnswer('hard');
-            setContentOpacity(1);
-          }, 100);
+          handleAnswer('hard');
           break;
         case 'Digit2':
-          setIsFlipped(false);
-          setShowControls(false);
-          setContentOpacity(0);
-          setTimeout(() => {
-            onAnswer('good');
-            setContentOpacity(1);
-          }, 100);
+          handleAnswer('good');
           break;
         case 'Digit3':
-          setIsFlipped(false);
-          setShowControls(false);
-          setContentOpacity(0);
-          setTimeout(() => {
-            onAnswer('easy');
-            setContentOpacity(1);
-          }, 100);
+          handleAnswer('easy');
           break;
       }
     };

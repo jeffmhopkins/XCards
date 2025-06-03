@@ -1,6 +1,6 @@
-# xCards v1.0.5 - Sci-Fi Flash Card Application
+# xCards v1.0.5 - Flash Card Application
 
-A comprehensive sci-fi themed flash card application that transforms learning into an immersive cosmic journey with adaptive study experiences and cutting-edge interactive design.
+A comprehensive flash card application with adaptive study experiences and modern interactive design for effective learning.
 
 ## Features
 
@@ -14,13 +14,13 @@ A comprehensive sci-fi themed flash card application that transforms learning in
 
 ### Study Experience
 - **Adaptive Learning**: Spaced repetition with difficulty tracking
-- **Visual Feedback**: Sci-fi themed UI with glow effects and animations
+- **Visual Feedback**: Modern UI with glow effects and animations
 - **Session Management**: Track study sessions with accuracy metrics
 - **Exit Protection**: Save progress when exiting study sessions
 
 ### Technical Features
 - **Local Storage**: Complete client-side data persistence
-- **Dark Theme**: Immersive space-themed color scheme
+- **Dark Theme**: Modern dark color scheme
 - **Responsive Design**: Works on desktop and mobile devices
 - **Static Deployment**: No backend dependencies required
 
@@ -127,7 +127,7 @@ xCards/
 - Complete deck management system
 - Advanced study modes and analytics
 - PWA functionality with offline support
-- Sci-fi themed UI with animations
+- Modern themed UI with animations
 - Local storage persistence
 - CSV import/export capabilities
 - Mobile-responsive design

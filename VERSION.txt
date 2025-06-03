@@ -1,8 +1,14 @@
-xCards v1.0.4
+xCards v1.0.4_fixed
 
 Release Date: June 3, 2025
 
-Key Changes:
+Key Changes in _fixed version:
+- Fixed deck card layout for consistent bottom alignment
+- Card count, status, and Study Now button now align to bottom regardless of description length
+- Improved CSS flexbox layout with proper vertical distribution
+- Enhanced user interface consistency across all deck cards
+
+Previous v1.0.4 Changes:
 - Fixed CSV import parsing for multiple categories
 - Improved handling of quoted fields with commas
 - Updated PWA configuration for GitHub Pages deployment
@@ -12,6 +18,7 @@ Build Information:
 - Production build: /dist/ (standard deployment with "/" paths)
 - GitHub Pages build: /docs/ (deployment with "/XCards/" paths)
 - Both builds include PWA support and offline functionality
+- Latest UI improvements for deck card alignment
 
 Author: Jeff M Hopkins
 Repository: https://github.com/jeffmhopkins/xCards

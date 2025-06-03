@@ -32,7 +32,7 @@ export function DeckCard({ deck, onEdit, onDelete, onStudy, onSelect, isSelected
 
   return (
     <div
-      className={`glass-effect holographic rounded-2xl p-6 hover:neon-glow transition-all duration-300 transform hover:scale-105 cursor-pointer ${
+      className={`glass-effect holographic rounded-2xl p-6 hover:neon-glow transition-all duration-300 transform hover:scale-105 cursor-pointer flex flex-col h-full ${
         isSelected ? 'neon-glow ring-2 ring-cyan-400/50' : ''
       }`}
       style={isSelected ? {
@@ -64,43 +64,45 @@ export function DeckCard({ deck, onEdit, onDelete, onStudy, onSelect, isSelected
         </div>
       </div>
       
-      <p className="text-text-secondary mb-4">
+      <p className="text-text-secondary mb-4 flex-grow">
         {deck.description || 'No description'}
       </p>
       
-      <div className="flex justify-between items-center text-sm">
-        <span className="text-text-secondary">{deck.cards.length} cards</span>
-        <div className="flex items-center space-x-2">
-          <div className={`w-2 h-2 rounded-full ${
-            accuracy >= 80 ? 'bg-green-400' : 
-            accuracy >= 60 ? 'bg-yellow-400' : 
-            'bg-cyan-500'
-          }`}></div>
-          <span className={`${
-            accuracy >= 80 ? 'text-green-400' : 
-            accuracy >= 60 ? 'text-yellow-400' : 
-            'text-cyan-500'
-          }`}>
-            {deck.cards.length > 0 ? (accuracy > 0 ? `${accuracy}% accuracy` : 'Ready to study') : 'Empty deck'}
-          </span>
+      <div className="mt-auto">
+        <div className="flex justify-between items-center text-sm mb-4">
+          <span className="text-text-secondary">{deck.cards.length} cards</span>
+          <div className="flex items-center space-x-2">
+            <div className={`w-2 h-2 rounded-full ${
+              accuracy >= 80 ? 'bg-green-400' : 
+              accuracy >= 60 ? 'bg-yellow-400' : 
+              'bg-cyan-500'
+            }`}></div>
+            <span className={`${
+              accuracy >= 80 ? 'text-green-400' : 
+              accuracy >= 60 ? 'text-yellow-400' : 
+              'text-cyan-500'
+            }`}>
+              {deck.cards.length > 0 ? (accuracy > 0 ? `${accuracy}% accuracy` : 'Ready to study') : 'Empty deck'}
+            </span>
+          </div>
         </div>
+        
+        {/* Study Button */}
+        {deck.cards.length > 0 && (
+          <div className="pt-4 border-t border-white/10">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onStudy(deck);
+              }}
+              className="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 flex items-center justify-center space-x-2"
+            >
+              <Play className="w-4 h-4" />
+              <span>Study Now</span>
+            </button>
+          </div>
+        )}
       </div>
-      
-      {/* Study Button */}
-      {deck.cards.length > 0 && (
-        <div className="mt-4 pt-4 border-t border-white/10">
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onStudy(deck);
-            }}
-            className="w-full px-4 py-2 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-lg hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 flex items-center justify-center space-x-2"
-          >
-            <Play className="w-4 h-4" />
-            <span>Study Now</span>
-          </button>
-        </div>
-      )}
 
       {showDeleteConfirm && (
         <ConfirmationModal

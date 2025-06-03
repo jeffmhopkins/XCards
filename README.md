@@ -9,7 +9,7 @@ A comprehensive sci-fi themed flash card application that transforms learning in
 - **Smart Study Modes**: Sequential, shuffled, and difficulty-based study options
 - **Advanced Analytics**: Detailed statistics and progress tracking
 - **Category System**: Organize cards by subject areas
-- **Import/Export**: Enhanced CSV support with proper multi-category parsing
+- **Import/Export**: CSV support for data portability
 - **PWA Ready**: Progressive Web App for mobile installation
 
 ### Study Experience
@@ -37,8 +37,6 @@ xCards/
 │   │   └── pages/         # Main application pages
 ├── server/                # Express server (for development)
 ├── shared/                # Shared types and schemas
-├── dist/                  # Production build for standard deployment
-├── docs/                  # GitHub Pages build with /XCards/ paths
 └── Configuration files
 ```
 
@@ -56,11 +54,7 @@ xCards/
 
 3. **Build for Production**
    ```bash
-   # For standard deployment
-   npx vite build --config vite.config.dist.ts
-   
-   # For GitHub Pages
-   npx vite build --config vite.config.docs.ts
+   npm run build
    ```
 
 ## Key Technologies
@@ -88,7 +82,13 @@ xCards/
 
 ## Version History
 
-### v1.0.4 (Current)
+### v1.0.4_fixed (Current)
+- Fixed deck card layout for consistent bottom alignment
+- Card count, status, and Study Now button now align to bottom regardless of description length
+- Improved CSS flexbox layout with proper vertical distribution
+- Enhanced user interface consistency across all deck cards
+
+### v1.0.4
 - Fixed CSV import parsing for multiple categories
 - Improved handling of quoted fields with commas
 - Categories like "Math,Basic,Arithmetic" now import correctly

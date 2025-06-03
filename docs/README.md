@@ -1,4 +1,4 @@
-# Flashcard Platform v1.0.1 - Production Distribution
+# Flashcard Platform v1.0.3 - Production Distribution
 
 A sci-fi themed interactive flashcard learning platform - ready for deployment.
 

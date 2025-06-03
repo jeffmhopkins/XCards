@@ -1,4 +1,4 @@
-# xCards v1.0.0 - Installation Guide
+# xCards v1.0.3 - Installation Guide
 
 ## Quick Start
 
@@ -11,7 +11,7 @@
 1. **Extract the backup files**
    ```bash
    # Extract all files to your project directory
-   cp -r backup_v1.0.0/* your-project-folder/
+   cp -r backup_v1.0.3/* your-project-folder/
    cd your-project-folder
    ```
 
@@ -39,11 +39,10 @@ Since xCards is completely client-side, you can deploy to any static hosting ser
    npm run build
    ```
 
-2. **Deploy the `dist` folder** to:
-   - Netlify
-   - Vercel
-   - GitHub Pages
-   - Any static hosting service
+2. **Deploy either folder** to your hosting service:
+   - Use `/dist/` folder for general deployment
+   - Use `/docs/` folder for GitHub Pages (enables Pages from docs folder)
+   - Compatible with: Netlify, Vercel, GitHub Pages, any static hosting
 
 ### Self-Hosted Server
 You can also run the included Express server:

@@ -69,6 +69,7 @@ xCards/
 
 - **Storage**: Browser localStorage only
 - **Backup**: Export decks as CSV files
+- **Migration**: Automatic schema updates
 - **Privacy**: All data stays on user's device
 
 ## Development Guidelines
@@ -78,6 +79,36 @@ xCards/
 - Implement responsive design patterns
 - Maintain sci-fi theme consistency
 - Ensure PWA compliance
+
+## Version History
+
+### v1.0.3 (Current)
+- Enhanced filtering system with cascading filters
+- Categories → Review Recency → Mastery Level filter order
+- Dynamic filter counts that update based on selections
+- Category accuracy percentages for informed decisions
+- Review recency filtering with memory-focused categories
+- Fixed filtered card count bug in study sessions
+- GitHub Pages PWA compatibility
+- Production build optimization
+
+### v1.0.2
+- Improved study mode filtering
+- Enhanced user experience with intuitive interfaces
+- Advanced multi-deck learning statistics
+
+### v1.0.1
+- Gamification-driven learning motivation
+- Cross-platform accessibility improvements
+
+### v1.0.0
+- Complete deck management system
+- Advanced study modes and analytics
+- PWA functionality with offline support
+- Sci-fi themed UI with animations
+- Local storage persistence
+- CSV import/export capabilities
+- Mobile-responsive design
 
 ## License
 

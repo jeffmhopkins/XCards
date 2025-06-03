@@ -1,27 +1,27 @@
-xCards v1.0.4_fixed
+xCards v1.0.4c
 
 Release Date: June 3, 2025
 
-Key Changes in _fixed version:
-- Fixed deck card layout for consistent bottom alignment
-- Card count, status, and Study Now button now align to bottom regardless of description length
-- Improved CSS flexbox layout with proper vertical distribution
-- Enhanced user interface consistency across all deck cards
-- Fixed GitHub Pages deployment 404 errors
-- Corrected PWA manifest and service worker paths for GitHub Pages
-- Updated favicon reference to use existing icon file
+Key Changes in v1.0.4c (GitHub Commit Version):
+- Removed all Android build folders and documentation
+- Cleaned up project structure for web deployment only
+- Updated all README files with GitHub repository cloning instructions
+- Verified version consistency across all documentation
+- Included both /dist/ and /docs/ deployment builds
+- Ready for GitHub repository commit and deployment
 
 Previous v1.0.4 Changes:
+- Fixed deck card layout for consistent bottom alignment
 - Fixed CSV import parsing for multiple categories
-- Improved handling of quoted fields with commas
-- Updated PWA configuration for GitHub Pages deployment
+- Fixed GitHub Pages deployment 404 errors
+- Corrected PWA manifest and service worker paths
 - Enhanced build system with separate dist/docs outputs
 
 Build Information:
 - Production build: /dist/ (standard deployment with "/" paths)
-- GitHub Pages build: /docs/ (deployment with "/XCards/" paths - fixed)
+- GitHub Pages build: /docs/ (deployment with "/XCards/" paths)
 - Both builds include PWA support and offline functionality
-- GitHub Pages deployment now works without 404 errors
+- Clean project structure without Android dependencies
 
 Author: Jeff M Hopkins
-Repository: https://github.com/jeffmhopkins/xCards
+Repository: https://github.com/jeffmhopkins/XCards

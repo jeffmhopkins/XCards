@@ -42,17 +42,23 @@ xCards/
 
 ## Installation & Setup
 
-1. **Install Dependencies**
+1. **Clone Repository**
+   ```bash
+   git clone https://github.com/jeffmhopkins/XCards.git
+   cd XCards
+   ```
+
+2. **Install Dependencies**
    ```bash
    npm install
    ```
 
-2. **Start Development Server**
+3. **Start Development Server**
    ```bash
    npm run dev
    ```
 
-3. **Build for Production**
+4. **Build for Production**
    ```bash
    npm run build
    ```

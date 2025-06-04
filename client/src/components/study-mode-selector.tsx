@@ -306,6 +306,7 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
     // Calculate priority score for each card (lower score = higher priority)
     const cardsWithPriority = allCards.map(card => {
       let priority = 0;
+      let difficultyRank = 0; // Secondary sort for tie-breaking
       
       // Priority 1: Overdue cards (nextReview has passed)
       if (card.nextReview && new Date(card.nextReview).getTime() <= now) {
@@ -324,16 +325,31 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
         priority = daysSinceReview * difficultyMultiplier;
       }
       
-      return { card, priority };
+      // Set difficulty rank for tie-breaking (lower = harder)
+      difficultyRank = card.difficulty === 'hard' ? 0 : card.difficulty === 'good' ? 1 : 2;
+      
+      return { card, priority, difficultyRank };
     });
     
-    // Sort by priority (lowest first) and take up to 20 cards
-    const selectedCards = cardsWithPriority
-      .sort((a, b) => a.priority - b.priority)
+    // Sort by priority first, then by difficulty (hardest first) for ties
+    const sortedCards = cardsWithPriority
+      .sort((a, b) => {
+        if (a.priority === b.priority) {
+          return a.difficultyRank - b.difficultyRank; // Hard < Good < Easy
+        }
+        return a.priority - b.priority;
+      })
       .slice(0, 20)
       .map(item => item.card);
     
-    return selectedCards;
+    // Shuffle the selected cards for varied study experience
+    const shuffledCards = [...sortedCards];
+    for (let i = shuffledCards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffledCards[i], shuffledCards[j]] = [shuffledCards[j], shuffledCards[i]];
+    }
+    
+    return shuffledCards;
   };
 
   const filteredCards = getFilteredCards();

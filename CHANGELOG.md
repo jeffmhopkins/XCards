@@ -6,11 +6,13 @@
 - **Post-Study Navigation**: Study session completion now automatically navigates to statistics view
 - **Button Updates**: Session complete modal button changed to "View Statistics" for clearer user flow
 - **About Modal Updates**: Removed "sci-fi themed" branding, updated creator name to "Jeff Hopkins"
+- **Smart Statistics Selection**: Statistics view now intelligently defaults to the most relevant deck based on context
 
 ### Technical Improvements
 - **Shuffle Algorithm**: Fixed study mode shuffle logic with proper Fisher-Yates algorithm for reliable randomization
 - **Documentation**: Added live application URL to README and updated version references
 - **Build System**: Enhanced build-docs.js script with better GitHub Pages deployment support
+- **Context-Aware Navigation**: Implemented priority-based deck selection for statistics view (last studied > selected deck > fallback)
 
 ## v1.0.5
 

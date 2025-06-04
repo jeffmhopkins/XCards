@@ -59,11 +59,25 @@ export default function Home() {
   const [pendingViewChange, setPendingViewChange] = useState<ViewType | null>(null);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null);
+  const [lastStudiedDeckId, setLastStudiedDeckId] = useState<string | null>(null);
 
   // Calculate active stats decks and selected decks for modals
+  const getDefaultStatsDeck = () => {
+    // Priority 1: Last studied deck (from completed study session)
+    if (lastStudiedDeckId && decks.find(d => d.id === lastStudiedDeckId)) {
+      return lastStudiedDeckId;
+    }
+    // Priority 2: Currently selected deck from deck view
+    if (selectedDeckId && decks.find(d => d.id === selectedDeckId)) {
+      return selectedDeckId;
+    }
+    // Priority 3: First available deck
+    return decks.length > 0 ? decks[0].id : null;
+  };
+
   const activeStatsDecks = selectedStatsDecks.length > 0 
     ? selectedStatsDecks 
-    : decks.length > 0 ? [decks[0].id] : [];
+    : getDefaultStatsDeck() ? [getDefaultStatsDeck()!] : [];
   const selectedDecks = decks.filter(d => activeStatsDecks.includes(d.id));
 
   useEffect(() => {
@@ -419,6 +433,7 @@ export default function Home() {
         correctAnswers: newSession.correctAnswers,
         incorrectAnswers: newSession.incorrectAnswers,
       });
+      setLastStudiedDeckId(currentStudyDeck.id);
       setIsSessionCompleteModalOpen(true);
       setCurrentStudyDeck(null);
       setStudySessionCards([]);
@@ -914,7 +929,13 @@ export default function Home() {
               </div>
             </button>
             <button
-              onClick={() => setCurrentView('decks')}
+              onClick={() => {
+                if (currentStudyDeck) {
+                  handleExitStudy('decks');
+                } else {
+                  setCurrentView('decks');
+                }
+              }}
               className="hover:scale-105 transition-transform duration-300"
             >
               <h1 className="text-2xl font-bold bg-gradient-to-r from-cyan-500 to-purple-600 bg-clip-text text-transparent">
@@ -925,7 +946,15 @@ export default function Home() {
           
           <ViewSelector 
             currentView={currentView} 
-            onViewChange={setCurrentView}
+            onViewChange={(view) => {
+              if (view === 'stats' && currentView === 'decks') {
+                // When navigating to stats from deck view, clear lastStudiedDeckId 
+                // so it uses selectedDeckId instead
+                setLastStudiedDeckId(null);
+                setSelectedStatsDecks([]);
+              }
+              setCurrentView(view);
+            }}
             isStudyActive={!!currentStudyDeck}
             onRequestExitStudy={handleExitStudy}
           />
@@ -989,6 +1018,8 @@ export default function Home() {
         }}
         onViewStats={() => {
           setIsSessionCompleteModalOpen(false);
+          // Clear any manual stats deck selection to use default logic
+          setSelectedStatsDecks([]);
           setCurrentView('stats');
         }}
         accuracy={sessionResults.accuracy}

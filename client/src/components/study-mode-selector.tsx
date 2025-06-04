@@ -307,6 +307,7 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
     const cardsWithPriority = allCards.map(card => {
       let priority = 0;
       let difficultyRank = 0; // Secondary sort for tie-breaking
+      let recencyRank = 0; // Tertiary sort for when difficulty is also tied
       
       // Priority 1: Overdue cards (nextReview has passed)
       if (card.nextReview && new Date(card.nextReview).getTime() <= now) {
@@ -328,16 +329,29 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
       // Set difficulty rank for tie-breaking (lower = harder)
       difficultyRank = card.difficulty === 'hard' ? 0 : card.difficulty === 'good' ? 1 : 2;
       
-      return { card, priority, difficultyRank };
+      // Set recency rank for final tie-breaking (older = higher priority)
+      if (card.lastReviewed) {
+        recencyRank = -new Date(card.lastReviewed).getTime(); // Negative so older dates are smaller (higher priority)
+      } else {
+        recencyRank = 0; // Never reviewed cards get neutral recency
+      }
+      
+      return { card, priority, difficultyRank, recencyRank };
     });
     
-    // Sort by priority first, then by difficulty (hardest first) for ties
+    // Sort by priority first, then difficulty, then recency
     const sortedCards = cardsWithPriority
       .sort((a, b) => {
-        if (a.priority === b.priority) {
-          return a.difficultyRank - b.difficultyRank; // Hard < Good < Easy
+        // Primary sort: Priority score
+        if (a.priority !== b.priority) {
+          return a.priority - b.priority;
         }
-        return a.priority - b.priority;
+        // Secondary sort: Difficulty (hardest first)
+        if (a.difficultyRank !== b.difficultyRank) {
+          return a.difficultyRank - b.difficultyRank;
+        }
+        // Tertiary sort: Recency (oldest first)
+        return a.recencyRank - b.recencyRank;
       })
       .slice(0, 20)
       .map(item => item.card);

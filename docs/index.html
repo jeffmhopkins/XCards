@@ -246,12 +246,12 @@ node build-all.js     # Complete build process</div>
     </div>
     
     <script>
-        // Register service worker
+        // Register service worker for GitHub Pages subdirectory
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => console.log('SW registered'))
-                    .catch(error => console.log('SW registration failed'));
+                navigator.serviceWorker.register('/XCards/sw.js', { scope: '/XCards/' })
+                    .then(registration => console.log('SW registered for /XCards/'))
+                    .catch(error => console.log('SW registration failed:', error));
             });
         }
         

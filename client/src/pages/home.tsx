@@ -987,6 +987,10 @@ export default function Home() {
           setIsSessionCompleteModalOpen(false);
           setCurrentView('decks');
         }}
+        onViewStats={() => {
+          setIsSessionCompleteModalOpen(false);
+          setCurrentView('stats');
+        }}
         accuracy={sessionResults.accuracy}
         cardsStudied={sessionResults.cardsStudied}
         correctAnswers={sessionResults.correctAnswers}

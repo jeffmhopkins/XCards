@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 interface SessionCompleteModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onViewStats: () => void;
   accuracy: number;
   cardsStudied: number;
   correctAnswers: number;
@@ -13,6 +14,7 @@ interface SessionCompleteModalProps {
 export function SessionCompleteModal({ 
   isOpen, 
   onClose, 
+  onViewStats,
   accuracy, 
   cardsStudied, 
   correctAnswers, 
@@ -80,10 +82,10 @@ export function SessionCompleteModal({
         </div>
         
         <Button
-          onClick={onClose}
+          onClick={onViewStats}
           className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
         >
-          Continue
+          View Statistics
         </Button>
       </div>
     </div>

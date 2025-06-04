@@ -1,8 +1,8 @@
-# xCards v1.0.5 - Deployment Guide
+# xCards v1.0.6 - Deployment Guide
 
 ## Overview
 
-xCards v1.0.5 includes two pre-built deployment configurations:
+xCards v1.0.6 includes two pre-built deployment configurations:
 
 - **`dist/`** - Generic static hosting (root path deployment)
 - **`docs/`** - GitHub Pages optimized (subdirectory deployment)
@@ -35,7 +35,7 @@ cd XCards
 npm install
 npm run build
 git add docs/
-git commit -m "Deploy v1.0.5"
+git commit -m "Deploy v1.0.6"
 git push origin main
 ```
 
@@ -125,7 +125,7 @@ PWA features require HTTPS. Most hosting services provide this automatically:
 - Optimized asset loading
 - Service worker caching
 
-### Bundle Sizes (v1.0.5)
+### Bundle Sizes (v1.0.6)
 
 - CSS: ~74KB (12KB gzipped)
 - JavaScript: ~342KB (98KB gzipped)

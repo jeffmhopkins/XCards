@@ -1,5 +1,4 @@
-# xCards v1.0.5 - Flash Card Application
-- Live at https://jeffmhopkins.github.io/XCards/
+# xCards v1.0.6 - Flash Card Application
 
 A comprehensive flash card application with adaptive study experiences and modern interactive design for effective learning.
 
@@ -89,7 +88,7 @@ xCards/
 
 ## Version History
 
-### v1.0.5 (Current)
+### v1.0.6 (Current)
 - Updated navigation to icon-only buttons with glow effects
 - Simplified scoring system: binary points (0 for unknown, 1 for known)
 - Fixed card flip animation text behavior consistency

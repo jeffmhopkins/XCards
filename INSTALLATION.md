@@ -1,4 +1,4 @@
-# xCards v1.0.5 - Installation Guide
+# xCards v1.0.6 - Installation Guide
 
 ## Prerequisites
 

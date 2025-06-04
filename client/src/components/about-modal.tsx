@@ -38,10 +38,10 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </h2>
           </div>
           <p className="text-sm text-text-secondary font-mono mb-2">
-            Version 1.0.5
+            Version 1.0.6
           </p>
           <p className="text-text-secondary text-lg">
-            A sci-fi themed flashcard application for immersive and adaptive learning
+            A flashcard application for immersive and adaptive learning
           </p>
         </div>
 
@@ -128,7 +128,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
         <div className="text-center border-t border-white/10 pt-6">
           <p className="text-text-secondary text-sm mb-4">
             Created by{' '}
-            <span className="text-cyan-400 font-semibold">jeffmhopkins</span>
+            <span className="text-cyan-400 font-semibold">Jeff Hopkins</span>
           </p>
           <div className="flex justify-center space-x-4 mb-6">
             <a

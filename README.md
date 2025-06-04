@@ -1,4 +1,4 @@
-# xCards v1.0.6 - Flash Card Application
+# xCards v1.0.7 - Flash Card Application
 
 - Live at https://jeffmhopkins.github.io/XCards/
 
@@ -8,14 +8,16 @@ A comprehensive flash card application with adaptive study experiences and moder
 
 ### Core Functionality
 - **Deck Management**: Create, edit, delete, and organize flash card decks
-- **Smart Study Modes**: Sequential, shuffled, and difficulty-based study options
+- **Smart Review Sessions**: 20-card spaced repetition algorithm for optimal learning
+- **Multiple Study Modes**: Sequential, shuffled, and difficulty-based study options
 - **Advanced Analytics**: Detailed statistics and progress tracking
 - **Category System**: Organize cards by subject areas
 - **Import/Export**: CSV support for data portability
 - **PWA Ready**: Progressive Web App for mobile installation
 
 ### Study Experience
-- **Adaptive Learning**: Spaced repetition with difficulty tracking
+- **Spaced Repetition**: SM-2 inspired algorithm with intelligent card selection
+- **Adaptive Learning**: Automatic review interval calculation based on performance
 - **Visual Feedback**: Modern UI with glow effects and animations
 - **Session Management**: Track study sessions with accuracy metrics
 - **Exit Protection**: Save progress when exiting study sessions

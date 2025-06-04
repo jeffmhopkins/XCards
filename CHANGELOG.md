@@ -1,5 +1,24 @@
 # xCards Changelog
 
+## v1.0.7
+
+### Smart Review Sessions
+- **Spaced Repetition Algorithm**: Added 20-card Smart Review Sessions with intelligent card selection
+- **Priority System**: Cards prioritized by overdue status, new cards, and difficulty weighting
+- **SM-2 Inspired Intervals**: Automatic next review calculation (Hard=60%, Good=100%, Easy=150% of base interval)
+- **Exponential Scaling**: Review intervals grow exponentially (2.5x multiplier) with 180-day maximum
+- **Mobile Responsive**: Optimized Smart Review button layout for mobile devices
+
+### User Experience
+- **Recommended Feature**: Smart Review Sessions prominently featured as recommended study method
+- **Documentation**: Comprehensive algorithm details added to about modal
+- **Interval Transparency**: Clear explanation of how review dates are calculated
+
+### Technical Implementation
+- **Next Review Dates**: Automatic calculation and storage of optimal review timing
+- **Card Selection Logic**: Advanced prioritization algorithm for maximum learning efficiency
+- **Performance**: Efficient card sorting and selection for 20-card sessions
+
 ## v1.0.6
 
 ### User Experience Improvements

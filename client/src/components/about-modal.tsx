@@ -38,7 +38,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </h2>
           </div>
           <p className="text-sm text-text-secondary font-mono mb-2">
-            Version 1.0.6
+            Version 1.0.7
           </p>
           <p className="text-text-secondary text-lg">
             A flashcard application for immersive and adaptive learning
@@ -56,10 +56,11 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </div>
             <div className="space-y-3 text-text-secondary text-sm">
               <p>• Create custom flashcard decks with questions and answers</p>
+              <p>• Use <strong>Smart Review Sessions</strong> - 20 cards selected by spaced repetition algorithm</p>
               <p>• Study in multiple modes: sequential, shuffled, or filtered by difficulty</p>
               <p>• Rate your confidence on each card (easy, good, hard)</p>
               <p>• Track progress with detailed statistics and analytics</p>
-              <p>• Adaptive algorithm adjusts repetition based on performance</p>
+              <p>• SM-2 inspired algorithm calculates optimal review intervals automatically</p>
             </div>
           </div>
 
@@ -71,27 +72,62 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </div>
             <div className="space-y-3 text-text-secondary text-sm">
               <div className="flex items-center space-x-2">
-                <Smartphone className="w-4 h-4 text-cyan-400" />
-                <span>Progressive Web App (PWA)</span>
+                <Brain className="w-4 h-4 text-green-400" />
+                <span><strong>Smart Review Sessions</strong> - 20-card spaced repetition</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Brain className="w-4 h-4 text-green-400" />
-                <span>Spaced repetition algorithm</span>
+                <Brain className="w-4 h-4 text-orange-400" />
+                <span>Multiple study modes with intelligent filtering</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Database className="w-4 h-4 text-blue-400" />
                 <span>CSV import/export functionality</span>
               </div>
               <div className="flex items-center space-x-2">
-                <Brain className="w-4 h-4 text-orange-400" />
-                <span>Multiple study modes</span>
+                <Smartphone className="w-4 h-4 text-cyan-400" />
+                <span>Progressive Web App (PWA)</span>
               </div>
               <div className="flex items-center space-x-2">
                 <Shield className="w-4 h-4 text-red-400" />
-                <span>Detailed progress analytics</span>
+                <span>Detailed progress analytics & statistics</span>
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Smart Review Algorithm Details */}
+        <div className="mb-8">
+          <div className="glass-effect rounded-2xl p-6 border border-cyan-500/20">
+            <div className="flex items-center space-x-3 mb-4">
+              <Brain className="w-6 h-6 text-cyan-400" />
+              <h3 className="text-xl font-bold text-white">Smart Review Algorithm (v1.0.7)</h3>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h4 className="text-sm font-semibold text-cyan-400 mb-2">Card Selection Priority</h4>
+                <div className="space-y-2 text-xs text-text-secondary">
+                  <p>1. <strong>Overdue cards</strong> - Past their scheduled review date</p>
+                  <p>2. <strong>New cards</strong> - Never studied before</p>
+                  <p>3. <strong>Recent cards</strong> - Weighted by difficulty rating</p>
+                </div>
+              </div>
+              <div>
+                <h4 className="text-sm font-semibold text-purple-400 mb-2">Next Review Calculation</h4>
+                <div className="space-y-2 text-xs text-text-secondary">
+                  <p><strong>First review:</strong> Hard=1d, Good=2d, Easy=4d</p>
+                  <p><strong>Subsequent:</strong> Exponential intervals (2.5x multiplier)</p>
+                  <p><strong>Hard:</strong> 60% of base interval</p>
+                  <p><strong>Good:</strong> 100% of base interval</p>
+                  <p><strong>Easy:</strong> 150% of base interval</p>
+                  <p><strong>Maximum:</strong> 180 days between reviews</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Additional Features Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
 
           {/* Privacy & Local Data */}
           <div className="glass-effect rounded-2xl p-6 border border-green-500/10">

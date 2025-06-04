@@ -9,7 +9,7 @@ interface StudyModeSelectorProps {
   onCancel: () => void;
 }
 
-export type StudyMode = 'sequence' | 'shuffled' | 'not-easy' | 'not-difficult';
+export type StudyMode = 'sequence' | 'shuffled' | 'not-easy' | 'not-difficult' | 'spaced-repetition-20';
 
 export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSelectorProps) {
   // Get all unique categories from the deck
@@ -298,7 +298,46 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
     return cards;
   };
 
+  // Spaced Repetition Algorithm - selects 20 cards optimally for retention
+  const selectSpacedRepetitionCards = () => {
+    const allCards = getFilteredCards();
+    const now = new Date().getTime();
+    
+    // Calculate priority score for each card (lower score = higher priority)
+    const cardsWithPriority = allCards.map(card => {
+      let priority = 0;
+      
+      // Priority 1: Overdue cards (nextReview has passed)
+      if (card.nextReview && new Date(card.nextReview).getTime() <= now) {
+        const overdueDays = Math.floor((now - new Date(card.nextReview).getTime()) / (24 * 60 * 60 * 1000));
+        priority = -1000 - overdueDays; // Most overdue first
+      }
+      // Priority 2: Never reviewed cards
+      else if (!card.lastReviewed) {
+        priority = -500;
+      }
+      // Priority 3: Cards reviewed but not yet due
+      else if (card.lastReviewed) {
+        const daysSinceReview = Math.floor((now - new Date(card.lastReviewed).getTime()) / (24 * 60 * 60 * 1000));
+        // Factor in difficulty - harder cards get higher priority
+        const difficultyMultiplier = card.difficulty === 'hard' ? 2 : card.difficulty === 'good' ? 1.5 : 1;
+        priority = daysSinceReview * difficultyMultiplier;
+      }
+      
+      return { card, priority };
+    });
+    
+    // Sort by priority (lowest first) and take up to 20 cards
+    const selectedCards = cardsWithPriority
+      .sort((a, b) => a.priority - b.priority)
+      .slice(0, 20)
+      .map(item => item.card);
+    
+    return selectedCards;
+  };
+
   const filteredCards = getFilteredCards();
+  const spacedRepetitionCards = selectSpacedRepetitionCards();
 
   const toggleCategory = (category: string) => {
     setSelectedCategories(prev => 
@@ -362,6 +401,11 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
     onStartStudy('shuffled', cards);
   };
 
+  const handleSpacedRepetitionStudy = () => {
+    const cards = spacedRepetitionCards;
+    onStartStudy('spaced-repetition-20', cards);
+  };
+
   return (
     <div className="max-w-2xl mx-auto">
       <div className="text-center mb-8">
@@ -371,6 +415,45 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
         <p className="text-text-secondary text-lg">
           Select how you'd like to study <span className="text-cyan-neon font-semibold">{deck.name}</span>
         </p>
+      </div>
+
+      {/* Spaced Repetition Quick Start */}
+      <div className="mb-6">
+        <div className="bg-gradient-to-r from-purple-600/20 to-cyan-500/20 border border-cyan-500/30 rounded-xl p-4 md:p-6 glass-effect">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <div className="flex-1 mb-4 md:mb-0">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                <Brain className="w-5 h-5 md:w-6 md:h-6 text-cyan-neon" />
+                <h3 className="text-lg md:text-xl font-bold text-text-primary">Smart Review Session</h3>
+                <span className="px-2 py-1 bg-cyan-500/20 text-cyan-400 text-xs rounded-full border border-cyan-500/30">
+                  Recommended
+                </span>
+              </div>
+              <p className="text-text-secondary text-sm mb-3">
+                Study 20 cards selected by our spaced repetition algorithm. Focuses on cards that need review most for optimal retention.
+              </p>
+              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs text-text-secondary">
+                <span>• Prioritizes overdue cards</span>
+                <span>• Includes new cards</span>
+                <span>• Optimized for memory retention</span>
+              </div>
+            </div>
+            <div className="md:ml-6 w-full md:w-auto">
+              <Button
+                onClick={handleSpacedRepetitionStudy}
+                disabled={spacedRepetitionCards.length === 0}
+                className="w-full md:w-auto px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-purple-600 to-cyan-500 text-black font-bold rounded-xl hover:shadow-lg hover:shadow-purple-600/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Brain className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+                <span className="hidden md:inline">Start Smart Review</span>
+                <span className="md:hidden">Smart Review</span>
+                <span className="ml-2 text-sm opacity-80">
+                  ({spacedRepetitionCards.length})
+                </span>
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* Category Selection */}

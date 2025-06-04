@@ -335,6 +335,40 @@ export default function Home() {
     setCurrentView('decks');
   };
 
+  // Calculate next review date using spaced repetition algorithm
+  const calculateNextReview = (difficulty: 'easy' | 'good' | 'hard', currentReviewCount: number): Date => {
+    const now = new Date();
+    let intervalDays = 1;
+    
+    // SM-2 inspired algorithm with simplified intervals
+    if (currentReviewCount === 0) {
+      // First review
+      intervalDays = difficulty === 'hard' ? 1 : difficulty === 'good' ? 2 : 4;
+    } else {
+      // Subsequent reviews
+      const baseInterval = currentReviewCount === 1 ? 3 : Math.pow(2.5, currentReviewCount - 1);
+      
+      switch (difficulty) {
+        case 'hard':
+          intervalDays = Math.max(1, Math.floor(baseInterval * 0.6));
+          break;
+        case 'good':
+          intervalDays = Math.floor(baseInterval);
+          break;
+        case 'easy':
+          intervalDays = Math.floor(baseInterval * 1.5);
+          break;
+      }
+    }
+    
+    // Cap maximum interval at 180 days
+    intervalDays = Math.min(intervalDays, 180);
+    
+    const nextReview = new Date(now);
+    nextReview.setDate(nextReview.getDate() + intervalDays);
+    return nextReview;
+  };
+
   const handleStudyAnswer = (difficulty: 'easy' | 'good' | 'hard') => {
     if (!currentStudyDeck || studySessionCards.length === 0) return;
 
@@ -355,12 +389,14 @@ export default function Home() {
       if (deck.id === currentStudyDeck.id) {
         const updatedCards = deck.cards.map(card => {
           if (card.id === currentCard.id) {
+            const nextReview = calculateNextReview(difficulty, card.reviewCount);
             const updatedCard = {
               ...card,
               reviewCount: card.reviewCount + 1,
               correctCount: card.correctCount + creditAmount,
               incorrectCount: card.incorrectCount + (isCorrect ? 0 : 1),
               lastReviewed: new Date(),
+              nextReview,
               difficulty,
             };
             return updatedCard;
@@ -394,12 +430,14 @@ export default function Home() {
     // Update the study session cards with the new difficulty
     const updatedStudySessionCards = studySessionCards.map(card => {
       if (card.id === currentCard.id) {
+        const nextReview = calculateNextReview(difficulty, card.reviewCount);
         return {
           ...card,
           reviewCount: card.reviewCount + 1,
           correctCount: card.correctCount + creditAmount,
           incorrectCount: card.incorrectCount + (isCorrect ? 0 : 1),
           lastReviewed: new Date(),
+          nextReview,
           difficulty,
         };
       }

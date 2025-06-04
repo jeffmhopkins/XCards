@@ -59,8 +59,35 @@ try {
     content = content.replace(/A sci-fi themed flashcard application for immersive and adaptive learning/g, 'A modern flashcard application for effective learning');
     content = content.replace(/"xCards - Sci-Fi Flash Cards"/g, '"xCards - Flash Cards"');
     content = content.replace(/flashcards, study, learning, education, sci-fi, adaptive learning/, 'flashcards, study, learning, education, adaptive learning');
+    
+    // Fix deprecated apple-mobile-web-app-capable meta tag
+    content = content.replace(
+      /<meta name="apple-mobile-web-app-capable" content="yes" \/>/,
+      '<meta name="mobile-web-app-capable" content="yes" />'
+    );
+    
     fs.writeFileSync(indexPath, content);
     console.log('✓ Updated index.html');
+  }
+
+  // Fix JavaScript bundle service worker registration
+  const assetsDir = 'docs/assets';
+  if (fs.existsSync(assetsDir)) {
+    const jsFiles = fs.readdirSync(assetsDir).filter(file => file.endsWith('.js'));
+    
+    jsFiles.forEach(file => {
+      const filePath = `${assetsDir}/${file}`;
+      let content = fs.readFileSync(filePath, 'utf8');
+      
+      // Fix service worker registration paths
+      content = content.replace(/navigator\.serviceWorker\.register\(["']\/sw\.js["']/g, 'navigator.serviceWorker.register("/XCards/sw.js"');
+      content = content.replace(/navigator\.serviceWorker\.register\(["']\.\/sw\.js["']/g, 'navigator.serviceWorker.register("/XCards/sw.js"');
+      content = content.replace(/register\(["']\/sw\.js["']/g, 'register("/XCards/sw.js"');
+      
+      fs.writeFileSync(filePath, content);
+    });
+    
+    console.log(`✓ Updated ${jsFiles.length} JavaScript files for service worker registration`);
   }
 
   console.log('✓ Docs build completed successfully!');

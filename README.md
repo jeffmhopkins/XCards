@@ -1,5 +1,4 @@
 # xCards v1.0.6 - Flash Card Application
-- Live at https://jeffmhopkins.github.io/XCards/ 
 
 - Live at https://jeffmhopkins.github.io/XCards/
 

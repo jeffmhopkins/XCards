@@ -5,6 +5,12 @@
 ### User Experience Improvements
 - **Post-Study Navigation**: Study session completion now automatically navigates to statistics view
 - **Button Updates**: Session complete modal button changed to "View Statistics" for clearer user flow
+- **About Modal Updates**: Removed "sci-fi themed" branding, updated creator name to "Jeff Hopkins"
+
+### Technical Improvements
+- **Shuffle Algorithm**: Fixed study mode shuffle logic with proper Fisher-Yates algorithm for reliable randomization
+- **Documentation**: Added live application URL to README and updated version references
+- **Build System**: Enhanced build-docs.js script with better GitHub Pages deployment support
 
 ## v1.0.5
 
@@ -18,9 +24,8 @@
 - **Consistent Experience**: Fixed card flip animation so instructional text fades out consistently in both directions
 
 ### Technical Improvements
-- **Deployment Ready**: Complete PWA configuration for both generic hosting and GitHub Pages
-- **Service Worker Fix**: Corrected service worker registration for subdirectory deployments
 - **Build Optimization**: Enhanced build system with dual output (dist/ and docs/)
+- **Service Worker Fix**: Corrected service worker registration for subdirectory deployments
 
 ### About Modal
 - **Version Update**: Updated about modal to display version 1.0.6
@@ -33,9 +38,8 @@
 - **Category Processing**: Categories like "Math,Basic,Arithmetic" now import correctly
 
 ### Deployment Infrastructure
-- **GitHub Pages**: Enhanced PWA configuration for GitHub Pages deployment
 - **Build System**: Separate dist/docs outputs for different hosting needs
-- **PWA Optimization**: Improved Progressive Web App functionality
+- **GitHub Pages**: Enhanced configuration for GitHub Pages deployment
 
 ## v1.0.3
 
@@ -47,7 +51,6 @@
 
 ### Bug Fixes
 - **Study Sessions**: Fixed filtered card count bug
-- **PWA Compatibility**: GitHub Pages Progressive Web App support
 - **Build Optimization**: Production build enhancements
 
 ## v1.0.2

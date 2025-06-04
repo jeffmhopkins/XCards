@@ -1,5 +1,7 @@
 # xCards v1.0.6 - Flash Card Application
 
+- Live at https://jeffmhopkins.github.io/XCards/
+
 A comprehensive flash card application with adaptive study experiences and modern interactive design for effective learning.
 
 ## Features
@@ -89,10 +91,11 @@ xCards/
 ## Version History
 
 ### v1.0.6 (Current)
-- Updated navigation to icon-only buttons with glow effects
-- Simplified scoring system: binary points (0 for unknown, 1 for known)
-- Fixed card flip animation text behavior consistency
-- Changed Good button color to lime (yellow-green) for better progression
+- Post-study navigation automatically goes to statistics view
+- Fixed shuffle algorithm with proper Fisher-Yates implementation
+- Removed sci-fi theming from about modal and branding
+- Enhanced GitHub Pages deployment configuration
+- Updated creator attribution and live URL display
 - Enhanced PWA configuration for GitHub Pages deployment
 - Fixed service worker registration for subdirectory deployment
 - Complete deployment readiness for both generic hosting and GitHub Pages

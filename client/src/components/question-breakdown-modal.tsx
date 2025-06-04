@@ -148,7 +148,7 @@ export function QuestionBreakdownModal({
               onChange={handleSearchChange}
               onFocus={() => setShowSuggestions(searchTerm.length > 0)}
               onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-              placeholder="Search questions, answers, or categories..."
+              placeholder="Search..."
               className="w-full pr-12 p-3 bg-void border border-cyan-500/20 rounded-xl text-text-primary focus:border-cyan-500 focus:outline-none transition-colors"
             />
             {searchTerm && (

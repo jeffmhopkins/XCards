@@ -1,6 +1,6 @@
 # xCards Changelog
 
-## v1.0.5 - December 2024
+## v1.0.5 - June 2025
 
 ### User Interface Improvements
 - **Navigation Enhancement**: Replaced dropdown menu with 3 icon-only buttons featuring glow effects when selected
@@ -19,7 +19,7 @@
 ### About Modal
 - **Version Update**: Updated about modal to display version 1.0.5
 
-## v1.0.4 - November 2024
+## v1.0.4 - May 2025
 
 ### CSV Import Enhancements
 - **Multi-Category Support**: Fixed parsing for categories with embedded commas
@@ -31,7 +31,7 @@
 - **Build System**: Separate dist/docs outputs for different hosting needs
 - **PWA Optimization**: Improved Progressive Web App functionality
 
-## v1.0.3 - October 2024
+## v1.0.3 - April 2025
 
 ### Advanced Filtering System
 - **Cascading Filters**: Categories → Review Recency → Mastery Level progression
@@ -44,21 +44,21 @@
 - **PWA Compatibility**: GitHub Pages Progressive Web App support
 - **Build Optimization**: Production build enhancements
 
-## v1.0.2 - September 2024
+## v1.0.2 - March 2025
 
 ### Study Experience
 - **Enhanced Filtering**: Improved study mode filtering capabilities
 - **User Experience**: More intuitive interfaces and interactions
 - **Multi-Deck Stats**: Advanced learning statistics across multiple decks
 
-## v1.0.1 - August 2024
+## v1.0.1 - February 2025
 
 ### Gamification & Accessibility
 - **Learning Motivation**: Gamification-driven study features
 - **Cross-Platform**: Improved accessibility across devices
 - **Performance**: Optimized application performance
 
-## v1.0.0 - July 2024
+## v1.0.0 - January 2025
 
 ### Initial Release
 - **Core Features**: Complete deck management system

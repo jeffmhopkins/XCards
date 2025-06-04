@@ -60,6 +60,12 @@ export default function Home() {
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null);
 
+  // Calculate active stats decks and selected decks for modals
+  const activeStatsDecks = selectedStatsDecks.length > 0 
+    ? selectedStatsDecks 
+    : decks.length > 0 ? [decks[0].id] : [];
+  const selectedDecks = decks.filter(d => activeStatsDecks.includes(d.id));
+
   useEffect(() => {
     loadData();
   }, []);
@@ -618,12 +624,6 @@ export default function Home() {
   };
 
   const renderStatsView = () => {
-    // Use selected decks or default to first deck if none selected
-    const activeStatsDecks = selectedStatsDecks.length > 0 
-      ? selectedStatsDecks 
-      : decks.length > 0 ? [decks[0].id] : [];
-
-    const selectedDecks = decks.filter(d => activeStatsDecks.includes(d.id));
 
     if (selectedDecks.length === 0) {
       return (
@@ -996,7 +996,7 @@ export default function Home() {
       <QuestionBreakdownModal
         isOpen={showQuestionBreakdown}
         onClose={() => setShowQuestionBreakdown(false)}
-        cards={selectedStatsDecks.length > 0 ? decks.find(d => d.id === selectedStatsDecks[0])?.cards || [] : decks[0]?.cards || []}
+        cards={selectedDecks.flatMap(deck => deck.cards)}
         sessions={sessions}
         deckId={selectedStatsDecks.length > 0 ? selectedStatsDecks[0] : decks[0]?.id || ''}
       />
@@ -1004,7 +1004,7 @@ export default function Home() {
       <CategoryStatsModal
         isOpen={showCategoryStats}
         onClose={() => setShowCategoryStats(false)}
-        cards={selectedStatsDecks.length > 0 ? decks.find(d => d.id === selectedStatsDecks[0])?.cards || [] : decks[0]?.cards || []}
+        cards={selectedDecks.flatMap(deck => deck.cards)}
       />
 
       <AlertModal

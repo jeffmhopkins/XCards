@@ -249,8 +249,9 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
       className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
       onClick={handleBackdropClick}
     >
-      <div className="glass-effect holographic rounded-3xl p-8 max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-6">
+      <div className="glass-effect holographic rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+        {/* Fixed Header */}
+        <div className="flex items-center justify-between p-8 pb-6 border-b border-cyan-500/20">
           <h3 className="text-2xl font-bold text-cyan-neon">Edit Deck</h3>
           <button
             onClick={handleClose}
@@ -259,6 +260,9 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
             <X className="w-5 h-5" />
           </button>
         </div>
+        
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-8 pt-6">
         
         <form onSubmit={handleSubmit} className="mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
@@ -443,18 +447,18 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
                           placeholder="Enter categories separated by commas"
                         />
                       </div>
-                      <div className="flex space-x-2">
-                        <Button
-                          onClick={handleSaveCard}
-                          className="px-4 py-2 bg-green-500/20 border border-green-500/30 text-green-400 rounded-xl hover:bg-green-500/30 transition-all duration-300"
-                        >
-                          Save
-                        </Button>
+                      <div className="flex justify-end space-x-2">
                         <Button
                           onClick={() => setEditingCard(null)}
                           className="px-4 py-2 bg-text-secondary/20 border border-text-secondary/30 text-text-secondary rounded-xl hover:bg-text-secondary/30 transition-all duration-300"
                         >
                           Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSaveCard}
+                          className="px-4 py-2 bg-green-500/20 border border-green-500/30 text-green-400 rounded-xl hover:bg-green-500/30 transition-all duration-300"
+                        >
+                          Save
                         </Button>
                       </div>
                     </div>
@@ -512,6 +516,7 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
             </div>
           )}
         </div>
+      </div>
       </div>
 
       <ConfirmationModal

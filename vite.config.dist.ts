@@ -13,5 +13,18 @@ export default defineConfig({
   base: "/",
   build: {
     outDir: "../dist",
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ['react', 'react-dom'],
+          icons: ['lucide-react']
+        }
+      }
+    },
+    chunkSizeWarningLimit: 2000,
+    minify: 'esbuild'
   },
+  esbuild: {
+    logOverride: { 'this-is-undefined-in-esm': 'silent' }
+  }
 });

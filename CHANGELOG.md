@@ -1,5 +1,65 @@
 # xCards Changelog
 
+## v1.0.8
+
+### Floating Search Functionality
+- **Real-time Card Search**: Added floating search bar in deck view for instant card discovery across all decks
+- **Search Results Display**: Live search results with card question, answer preview, deck context, and category tags
+- **Card Details Modal**: Comprehensive card information modal accessible from search results
+- **Context Preservation**: Search results show which deck each card belongs to for better navigation
+
+### Auto-Selection Logic
+- **Always Selected Deck**: Implemented logic ensuring one deck is always selected when decks exist
+- **Smart Selection**: Auto-selects first deck on app load, newly created decks, and imported decks
+- **Edge Case Handling**: Handles deck deletion scenarios by selecting next available deck
+- **Seamless Navigation**: Eliminates need for manual deck selection in single-deck scenarios
+
+### Smart Review Enhancements
+- **Dynamic Status Indicators**: Smart Review now shows accurate card counts from entire deck rather than session-limited view
+- **True Card Totals**: Status indicators display complete breakdown (e.g., "106 new" instead of "20 new") while maintaining 20-card session limits
+- **Simplified Button Text**: Smart Review button shows just the session count (e.g., "(20)") for cleaner interface
+- **Enhanced Card Due Logic**: Fixed day calculation for more accurate "due today" vs "overdue" classification
+- **Positive Status Messaging**: "All caught up!" indicator with checkmark for when no cards need review
+
+### Spaced Repetition Analytics
+- **Comprehensive Statistics Section**: Added detailed spaced repetition analytics to statistics view
+- **Card Status Overview**: Visual breakdown of New, Learning, Review, and Mastered card counts
+- **Next Review Schedule**: Timeline showing cards due today/tomorrow, this week, and later
+- **Difficulty Distribution**: Percentage breakdown of Easy/Good/Hard card classifications
+- **Learning Curve Analysis**: Metrics for average reviews per card, accuracy rates, retention, and interval efficiency
+
+### Layout and User Interface Improvements
+- **Single Column Layout**: Smart Review Session maintains consistent single-column layout across all screen sizes
+- **Responsive Search Bar**: Floating search bar positioned for optimal mobile and desktop use
+- **Proper Scrolling**: Added bottom padding to ensure all content remains accessible above floating elements
+- **Import Button Positioning**: Repositioned import button directly under deck cards for better visual hierarchy
+- **Full-width Button**: Import button spans full width to match deck card styling in single-deck view
+- **Improved Spacing**: Enhanced vertical spacing and visual hierarchy in study mode selection
+- **Filter Integration**: Status indicators now properly reflect active category, difficulty, and recency filters
+- **Deck Grid Optimization**: Limited deck view to maximum 2 columns to prevent cards from becoming too narrow on wide screens
+- **Desktop Alignment**: Fixed header and main content alignment consistency across all desktop screen widths
+- **Container Structure**: Unified layout container structure for consistent spacing and alignment
+
+### User Experience Enhancements
+- **Conditional Search Display**: Search bar only appears in deck view to maintain clean interface
+- **Clear Search Functionality**: X button to quickly clear search query and results
+- **Keyboard Navigation**: Maintained existing keyboard shortcuts while preserving search functionality
+- **Visual Consistency**: Search components match overall design theme with glass effects and gradients
+
+### Technical Improvements
+- **Separate Calculation Functions**: Distinguished between full deck analysis and session-limited card selection
+- **Real-time Filter Updates**: Dynamic status updates when filters are applied or removed
+- **Accurate Breakdown Logic**: Improved card due classification algorithm for better status accuracy
+- **Container Structure**: Unified layout container structure for consistent spacing and alignment
+
+### User Interface Polish
+- **Exit Study Modal**: Removed visual keyboard shortcut indicators while maintaining Enter and Escape key functionality
+- **Responsive Layout**: Enhanced mobile and desktop responsive behavior for deck grid display
+
+### Technical Improvements
+- **Layout Consistency**: Standardized max-width containers and padding structure across header and main content areas
+- **Visual Hierarchy**: Improved alignment between navigation elements and content sections
+
 ## v1.0.7
 
 ### Smart Review Sessions

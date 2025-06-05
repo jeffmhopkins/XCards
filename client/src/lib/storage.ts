@@ -1,9 +1,10 @@
-import { Deck, StudySession, AppStats } from './types';
+import { Deck, StudySession, AppStats, StudyFilterPreferences } from './types';
 
 const STORAGE_KEYS = {
   DECKS: 'xCards_decks',
   SESSIONS: 'xCards_sessions',
   STATS: 'xCards_stats',
+  STUDY_FILTERS: 'xCards_studyFilters',
 } as const;
 
 export class LocalStorage {
@@ -188,6 +189,118 @@ export class LocalStorage {
         createdAt: now,
       })),
     };
+  }
+
+  static getStudyFilterPreferences(): StudyFilterPreferences {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.STUDY_FILTERS);
+      if (!data) {
+        return {
+          selectedCategories: [],
+          selectedDifficulties: ['ungraded', 'easy', 'good', 'hard'],
+          selectedRecency: ['fresh', 'familiar', 'fuzzy', 'forgotten'],
+          shuffleCards: true,
+        };
+      }
+      
+      return JSON.parse(data);
+    } catch (error) {
+      console.error('Error loading study filter preferences:', error);
+      return {
+        selectedCategories: [],
+        selectedDifficulties: ['ungraded', 'easy', 'good', 'hard'],
+        selectedRecency: ['fresh', 'familiar', 'fuzzy', 'forgotten'],
+        shuffleCards: true,
+      };
+    }
+  }
+
+  static saveStudyFilterPreferences(preferences: StudyFilterPreferences): void {
+    try {
+      localStorage.setItem(STORAGE_KEYS.STUDY_FILTERS, JSON.stringify(preferences));
+    } catch (error) {
+      console.error('Error saving study filter preferences:', error);
+    }
+  }
+
+  static exportAllData(): string {
+    try {
+      const exportData = {
+        exportDate: new Date().toISOString(),
+        version: "1.0.8",
+        data: {
+          decks: this.getDecks(),
+          sessions: this.getSessions(),
+          stats: this.getStats(),
+          studyFilters: this.getStudyFilterPreferences()
+        }
+      };
+      
+      return JSON.stringify(exportData, null, 2);
+    } catch (error) {
+      console.error('Error exporting data:', error);
+      throw new Error('Failed to export data');
+    }
+  }
+
+  static importAllData(jsonData: string): { success: boolean; message: string } {
+    try {
+      const importData = JSON.parse(jsonData);
+      
+      // Validate data structure
+      if (!importData.version || !importData.data) {
+        return { success: false, message: 'Invalid backup file format' };
+      }
+      
+      // Version compatibility check
+      const supportedVersions = ['1.0.7', '1.0.8'];
+      if (!supportedVersions.includes(importData.version)) {
+        return { success: false, message: `Unsupported version: ${importData.version}` };
+      }
+      
+      // Backup current data before import
+      const currentBackup = this.exportAllData();
+      sessionStorage.setItem('xCards_preImportBackup', currentBackup);
+      
+      // Import data
+      if (importData.data.decks) {
+        this.saveDecks(importData.data.decks);
+      }
+      
+      if (importData.data.sessions) {
+        this.saveSessions(importData.data.sessions);
+      }
+      
+      if (importData.data.stats) {
+        this.saveStats(importData.data.stats);
+      }
+      
+      if (importData.data.studyFilters) {
+        this.saveStudyFilterPreferences(importData.data.studyFilters);
+      }
+      
+      return { success: true, message: 'Data imported successfully' };
+    } catch (error) {
+      console.error('Error importing data:', error);
+      return { success: false, message: 'Failed to parse or import data' };
+    }
+  }
+
+  static downloadFile(content: string, filename: string): void {
+    try {
+      const blob = new Blob([content], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch (error) {
+      console.error('Error downloading file:', error);
+      throw new Error('Failed to download file');
+    }
   }
 
   static calculateStats(decks: Deck[], sessions: StudySession[]): AppStats {

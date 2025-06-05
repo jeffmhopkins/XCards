@@ -1,25 +1,45 @@
-import { X, Trophy, Target, Clock } from 'lucide-react';
+import { X, Trophy, Target, Clock, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useEffect } from 'react';
 
 interface SessionCompleteModalProps {
   isOpen: boolean;
   onClose: () => void;
   onViewStats: () => void;
+  onRestart?: () => void;
   accuracy: number;
   cardsStudied: number;
   correctAnswers: number;
   incorrectAnswers: number;
+  canRestart?: boolean;
 }
 
 export function SessionCompleteModal({ 
   isOpen, 
   onClose, 
   onViewStats,
+  onRestart,
   accuracy, 
   cardsStudied, 
   correctAnswers, 
-  incorrectAnswers 
+  incorrectAnswers,
+  canRestart = false
 }: SessionCompleteModalProps) {
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && canRestart && onRestart) {
+        onRestart();
+      } else if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, canRestart, onRestart, onClose]);
+
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
@@ -81,12 +101,24 @@ export function SessionCompleteModal({
           </p>
         </div>
         
-        <Button
-          onClick={onViewStats}
-          className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
-        >
-          View Statistics
-        </Button>
+        <div className="space-y-3">
+          {canRestart && onRestart && (
+            <Button
+              onClick={onRestart}
+              className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300"
+            >
+              <RotateCcw className="w-4 h-4 mr-2" />
+              Study Again
+            </Button>
+          )}
+          
+          <Button
+            onClick={onViewStats}
+            className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
+          >
+            View Statistics
+          </Button>
+        </div>
       </div>
     </div>
   );

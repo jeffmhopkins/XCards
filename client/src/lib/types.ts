@@ -64,3 +64,21 @@ export interface CreateCardData {
   answer: string;
   categories: string[];
 }
+
+export interface StudyFilterPreferences {
+  selectedCategories: string[];
+  selectedDifficulties: string[];
+  selectedRecency: string[];
+  shuffleCards: boolean;
+}
+
+export interface StudySessionMetadata {
+  mode: 'sequence' | 'shuffled' | 'not-easy' | 'not-difficult' | 'spaced-repetition-20' | 'quick-random-20';
+  originalDeck: Deck;
+  filters?: {
+    categories: string[];
+    difficulties: string[];
+    recency: string[];
+    shuffle: boolean;
+  };
+}

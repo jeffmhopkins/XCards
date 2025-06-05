@@ -1,5 +1,7 @@
-import { X, Github, Info, Smartphone, Database, Brain, Shield, Code, Layers } from 'lucide-react';
+import { X, Github, Info, Smartphone, Database, Brain, Shield, Code, Layers, Download, Upload, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { LocalStorage } from '@/lib/storage';
+import { useState, useRef } from 'react';
 
 interface AboutModalProps {
   isOpen: boolean;
@@ -7,6 +9,83 @@ interface AboutModalProps {
 }
 
 export function AboutModal({ isOpen, onClose }: AboutModalProps) {
+  const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [showResetConfirm, setShowResetConfirm] = useState(false);
+  const [importMessage, setImportMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleExport = async () => {
+    try {
+      setIsExporting(true);
+      const exportData = LocalStorage.exportAllData();
+      const filename = `xCards-backup-${new Date().toISOString().split('T')[0]}.json`;
+      LocalStorage.downloadFile(exportData, filename);
+      setImportMessage({ type: 'success', text: 'Data exported successfully!' });
+    } catch (error) {
+      setImportMessage({ type: 'error', text: 'Failed to export data. Please try again.' });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setIsImporting(true);
+      setImportMessage(null);
+      
+      const text = await file.text();
+      const result = LocalStorage.importAllData(text);
+      
+      if (result.success) {
+        setImportMessage({ type: 'success', text: 'Data imported successfully! Refresh the page to see changes.' });
+        // Clear the file input
+        if (fileInputRef.current) {
+          fileInputRef.current.value = '';
+        }
+      } else {
+        setImportMessage({ type: 'error', text: result.message });
+      }
+    } catch (error) {
+      setImportMessage({ type: 'error', text: 'Failed to read file. Please check the file format.' });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const handleResetData = () => {
+    setShowResetConfirm(true);
+  };
+
+  const confirmResetData = async () => {
+    try {
+      setIsResetting(true);
+      setImportMessage(null);
+      setShowResetConfirm(false);
+      
+      // Clear all local storage data
+      localStorage.clear();
+      
+      setImportMessage({ type: 'success', text: 'All data has been reset successfully! Refresh the page to see changes.' });
+    } catch (error) {
+      setImportMessage({ type: 'error', text: 'Failed to reset data. Please try again.' });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
+  const cancelResetData = () => {
+    setShowResetConfirm(false);
+  };
+
   if (!isOpen) return null;
 
   return (
@@ -38,7 +117,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
             </h2>
           </div>
           <p className="text-sm text-text-secondary font-mono mb-2">
-            Version 1.0.7
+            Version 1.0.8
           </p>
           <p className="text-text-secondary text-lg">
             A flashcard application for immersive and adaptive learning
@@ -100,7 +179,7 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
           <div className="glass-effect rounded-2xl p-6 border border-cyan-500/20">
             <div className="flex items-center space-x-3 mb-4">
               <Brain className="w-6 h-6 text-cyan-400" />
-              <h3 className="text-xl font-bold text-white">Smart Review Algorithm (v1.0.7)</h3>
+              <h3 className="text-xl font-bold text-white">Smart Review Algorithm (v1.0.8)</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
@@ -161,30 +240,128 @@ export function AboutModal({ isOpen, onClose }: AboutModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="text-center border-t border-white/10 pt-6">
-          <p className="text-text-secondary text-sm mb-4">
-            Created by{' '}
-            <span className="text-cyan-400 font-semibold">Jeff Hopkins</span>
-          </p>
-          <div className="flex justify-center space-x-4 mb-6">
-            <a
-              href="https://github.com/jeffmhopkins/XCards"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center space-x-2 text-purple-400 hover:text-purple-300 transition-colors duration-200"
-            >
-              <Github className="w-4 h-4" />
-              <span className="text-sm">View on GitHub</span>
-            </a>
+        <div className="text-center pt-6">
+          {/* Data Transfer Section */}
+          <div className="mb-6 p-4 glass-effect rounded-xl border border-cyan-500/20">
+            <h4 className="text-lg font-semibold text-white mb-3">Data Transfer</h4>
+            <p className="text-text-secondary text-sm mb-4">
+              Export your decks and progress to transfer between devices. All data is stored locally in your browser cache - no external servers are used.
+            </p>
+            
+            {/* Hidden file input for import */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileSelect}
+              className="hidden"
+            />
+            
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
+              <Button
+                onClick={handleImportClick}
+                disabled={isImporting}
+                className="px-4 py-2 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-xl hover:bg-blue-600/30 transition-all duration-300 disabled:opacity-50"
+              >
+                <Upload className="w-4 h-4 mr-2" />
+                {isImporting ? 'Importing...' : 'Import'}
+              </Button>
+
+              <Button
+                onClick={handleExport}
+                disabled={isExporting}
+                className="px-4 py-2 bg-green-600/20 border border-green-500/30 text-green-400 rounded-xl hover:bg-green-600/30 transition-all duration-300 disabled:opacity-50"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                {isExporting ? 'Exporting...' : 'Export'}
+              </Button>
+              
+              <Button
+                onClick={handleResetData}
+                disabled={isResetting}
+                className="px-4 py-2 bg-red-600/20 border border-red-500/30 text-red-400 rounded-xl hover:bg-red-600/30 transition-all duration-300 disabled:opacity-50"
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                {isResetting ? 'Resetting...' : 'Reset'}
+              </Button>
+            </div>
+            
+            {/* Status Message */}
+            {importMessage && (
+              <div className={`text-sm px-3 py-2 rounded-lg ${
+                importMessage.type === 'success' 
+                  ? 'bg-green-500/20 border border-green-500/30 text-green-400' 
+                  : 'bg-red-500/20 border border-red-500/30 text-red-400'
+              }`}>
+                {importMessage.text}
+              </div>
+            )}
           </div>
-          <Button
-            onClick={onClose}
-            className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
-          >
-            Close
-          </Button>
+
+          <div className="border-t border-white/10 pt-6">
+            <p className="text-text-secondary text-sm mb-4">
+              Created by{' '}
+              <span className="text-cyan-400 font-semibold">Jeff Hopkins</span>
+            </p>
+            <div className="flex justify-center space-x-4 mb-6">
+              <a
+                href="https://github.com/jeffmhopkins/XCards"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-2 text-purple-400 hover:text-purple-300 transition-colors duration-200"
+              >
+                <Github className="w-4 h-4" />
+                <span className="text-sm">View on GitHub</span>
+              </a>
+            </div>
+
+            <Button
+              onClick={onClose}
+              className="px-8 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
+            >
+              Close
+            </Button>
+          </div>
         </div>
       </div>
+
+      {/* Reset Confirmation Modal */}
+      {showResetConfirm && (
+        <div className="fixed inset-0 z-60 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/70 backdrop-blur-sm" onClick={cancelResetData}></div>
+          <div className="relative bg-gradient-to-br from-gray-900 to-black border border-red-500/20 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <div className="text-center">
+              <div className="w-12 h-12 mx-auto mb-4 bg-red-600/20 rounded-full flex items-center justify-center">
+                <Trash2 className="w-6 h-6 text-red-400" />
+              </div>
+              
+              <h3 className="text-xl font-bold text-white mb-3">Reset All Data</h3>
+              
+              <p className="text-text-secondary text-sm mb-6">
+                Are you sure you want to reset all data? This will permanently delete all your decks, statistics, and progress. This action cannot be undone.
+              </p>
+              
+              <div className="flex space-x-3">
+                <Button
+                  onClick={cancelResetData}
+                  variant="outline"
+                  className="flex-1 px-4 py-3 bg-gray-600/20 border border-gray-500/30 text-gray-300 hover:bg-gray-600/30 hover:border-gray-500/50 transition-all duration-300 rounded-xl"
+                >
+                  Cancel
+                </Button>
+                
+                <Button
+                  onClick={confirmResetData}
+                  disabled={isResetting}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-red-600 to-red-400 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-red-600/20 transition-all duration-300 disabled:opacity-50"
+                >
+                  {isResetting ? 'Resetting...' : 'Reset Data'}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

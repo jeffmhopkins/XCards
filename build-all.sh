@@ -17,6 +17,11 @@ echo "xCards Build and Archive v$VERSION"
 echo "=================================="
 echo ""
 
+node build-dist.js
+node build-docs.js
+echo " Builds completed successfully!"
+echo
+
 # Check if builds exist, if not provide instructions
 if [ ! -d "dist" ] || [ ! -d "docs" ]; then
     echo "Build folders not found. Please run builds manually first:"
@@ -91,10 +96,6 @@ cp feature-graphic-1024x500.svg $TEMP_DIR/
 # Git configuration (if exists)
 if [ -f .gitignore ]; then
     cp .gitignore $TEMP_DIR/
-fi
-
-if [ -f .replit ]; then
-    cp .replit $TEMP_DIR/
 fi
 
 # Create the archive

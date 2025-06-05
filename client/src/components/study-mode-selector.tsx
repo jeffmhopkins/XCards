@@ -1,7 +1,8 @@
-import { useState } from 'react';
-import { Shuffle, List, Target, Play, CheckCircle, Tag, Check, ChevronDown, ChevronUp, Brain, Clock } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Shuffle, List, Target, Play, CheckCircle, Tag, Check, ChevronDown, ChevronUp, Brain, Clock, Flame, Zap, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Deck } from '@/lib/types';
+import { LocalStorage } from '@/lib/storage';
 
 interface StudyModeSelectorProps {
   deck: Deck;
@@ -9,21 +10,70 @@ interface StudyModeSelectorProps {
   onCancel: () => void;
 }
 
-export type StudyMode = 'sequence' | 'shuffled' | 'not-easy' | 'not-difficult' | 'spaced-repetition-20';
+export type StudyMode = 'sequence' | 'shuffled' | 'not-easy' | 'not-difficult' | 'spaced-repetition-20' | 'quick-random-20';
 
 export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSelectorProps) {
-  // Get all unique categories from the deck
-  const allCategories = Array.from(new Set(
-    deck.cards.flatMap(card => card.categories.length > 0 ? card.categories : ['Uncategorized'])
-  )).sort();
+  // Get all unique categories from the deck (memoized to prevent re-calculation)
+  const allCategories = useMemo(() => {
+    return Array.from(new Set(
+      deck.cards.flatMap(card => card.categories.length > 0 ? card.categories : ['Uncategorized'])
+    )).sort();
+  }, [deck.cards]);
 
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(allCategories);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [isCategorySelectionExpanded, setIsCategorySelectionExpanded] = useState(false);
-  const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>(['ungraded', 'easy', 'good', 'hard']);
+  const [selectedDifficulties, setSelectedDifficulties] = useState<string[]>([]);
   const [isDifficultySelectionExpanded, setIsDifficultySelectionExpanded] = useState(false);
-  const [selectedRecency, setSelectedRecency] = useState<string[]>(['fresh', 'familiar', 'fuzzy', 'forgotten']);
+  const [selectedRecency, setSelectedRecency] = useState<string[]>([]);
   const [isRecencySelectionExpanded, setIsRecencySelectionExpanded] = useState(false);
   const [shuffleCards, setShuffleCards] = useState(true);
+
+  // Initialize from saved preferences when categories are available
+  useEffect(() => {
+    if (allCategories.length > 0) {
+      const savedPreferences = LocalStorage.getStudyFilterPreferences();
+      
+      // For categories, use saved preferences if they exist and are still valid, otherwise default to all categories
+      const validSavedCategories = savedPreferences.selectedCategories.filter(cat => allCategories.includes(cat));
+      const categoriesToUse = validSavedCategories.length > 0 ? validSavedCategories : allCategories;
+      
+      // Ensure default selections are always available for keyboard navigation
+      const defaultDifficulties = savedPreferences.selectedDifficulties.length > 0 
+        ? savedPreferences.selectedDifficulties 
+        : ['ungraded', 'easy', 'good', 'hard'];
+      const defaultRecency = savedPreferences.selectedRecency.length > 0 
+        ? savedPreferences.selectedRecency 
+        : ['fresh', 'familiar', 'fuzzy', 'forgotten'];
+      
+      setSelectedCategories(categoriesToUse);
+      setSelectedDifficulties(defaultDifficulties);
+      setSelectedRecency(defaultRecency);
+      setShuffleCards(savedPreferences.shuffleCards);
+    }
+  }, [allCategories]); // Run when categories are available
+
+  // Manual save function with explicit values to avoid state timing issues
+  const savePreferences = (overrides?: Partial<{
+    selectedCategories: string[];
+    selectedDifficulties: string[];
+    selectedRecency: string[];
+    shuffleCards: boolean;
+  }>) => {
+    const categories = overrides?.selectedCategories ?? selectedCategories;
+    const difficulties = overrides?.selectedDifficulties ?? selectedDifficulties;
+    const recency = overrides?.selectedRecency ?? selectedRecency;
+    const shuffle = overrides?.shuffleCards ?? shuffleCards;
+    
+    if (categories.length > 0 && difficulties.length > 0) {
+      const preferences = {
+        selectedCategories: categories,
+        selectedDifficulties: difficulties,
+        selectedRecency: recency,
+        shuffleCards: shuffle,
+      };
+      LocalStorage.saveStudyFilterPreferences(preferences);
+    }
+  };
 
 
 
@@ -370,51 +420,70 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
   const spacedRepetitionCards = selectSpacedRepetitionCards();
 
   const toggleCategory = (category: string) => {
-    setSelectedCategories(prev => 
-      prev.includes(category) 
+    setSelectedCategories(prev => {
+      const newCategories = prev.includes(category) 
         ? prev.filter(c => c !== category)
-        : [...prev, category]
-    );
+        : [...prev, category];
+      // Save with the actual new values to avoid race condition
+      setTimeout(() => savePreferences({ selectedCategories: newCategories }), 10);
+      return newCategories;
+    });
   };
 
   const selectAllCategories = () => {
-    setSelectedCategories([...allCategories]);
+    const newCategories = [...allCategories];
+    setSelectedCategories(newCategories);
+    setTimeout(() => savePreferences({ selectedCategories: newCategories }), 10);
   };
 
   const selectNoCategories = () => {
-    setSelectedCategories([]);
+    const newCategories: string[] = [];
+    setSelectedCategories(newCategories);
+    setTimeout(() => savePreferences({ selectedCategories: newCategories }), 10);
   };
 
   const toggleDifficulty = (difficulty: string) => {
-    setSelectedDifficulties(prev => 
-      prev.includes(difficulty) 
+    setSelectedDifficulties(prev => {
+      const newDifficulties = prev.includes(difficulty) 
         ? prev.filter(d => d !== difficulty)
-        : [...prev, difficulty]
-    );
+        : [...prev, difficulty];
+      setTimeout(() => savePreferences({ selectedDifficulties: newDifficulties }), 10);
+      return newDifficulties;
+    });
   };
 
   const selectAllDifficulties = () => {
-    setSelectedDifficulties(['ungraded', 'easy', 'good', 'hard']);
+    const newDifficulties = ['ungraded', 'easy', 'good', 'hard'];
+    setSelectedDifficulties(newDifficulties);
+    setTimeout(() => savePreferences({ selectedDifficulties: newDifficulties }), 10);
   };
 
   const selectNoDifficulties = () => {
-    setSelectedDifficulties([]);
+    const newDifficulties: string[] = [];
+    setSelectedDifficulties(newDifficulties);
+    setTimeout(() => savePreferences({ selectedDifficulties: newDifficulties }), 10);
   };
 
   const toggleRecency = (recency: string) => {
-    setSelectedRecency(prev => 
-      prev.includes(recency) 
+    setSelectedRecency(prev => {
+      const newRecency = prev.includes(recency) 
         ? prev.filter(r => r !== recency)
-        : [...prev, recency]
-    );
+        : [...prev, recency];
+      setTimeout(() => savePreferences({ selectedRecency: newRecency }), 10);
+      return newRecency;
+    });
   };
 
   const selectAllRecency = () => {
-    setSelectedRecency(['fresh', 'familiar', 'fuzzy', 'forgotten']);
+    const newRecency = ['fresh', 'familiar', 'fuzzy', 'forgotten'];
+    setSelectedRecency(newRecency);
+    setTimeout(() => savePreferences({ selectedRecency: newRecency }), 10);
   };
 
   const selectNoRecency = () => {
-    setSelectedRecency([]);
+    const newRecency: string[] = [];
+    setSelectedRecency(newRecency);
+    setTimeout(() => savePreferences({ selectedRecency: newRecency }), 10);
   };
 
   const handleStartStudy = () => {
@@ -431,13 +500,105 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
     onStartStudy('shuffled', cards);
   };
 
+  const handleQuickStudy = () => {
+    let cards = [...filteredCards];
+    
+    // Fisher-Yates shuffle for randomization
+    for (let i = cards.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [cards[i], cards[j]] = [cards[j], cards[i]];
+    }
+    
+    // Take first 20 cards (or all if less than 20)
+    const quickStudyCards = cards.slice(0, Math.min(20, cards.length));
+    
+    onStartStudy('quick-random-20', quickStudyCards);
+  };
+
+  // Calculate cards due breakdown from ALL filtered cards (for status display)
+  const getAllCardsDueBreakdown = () => {
+    const cards = getFilteredCards();
+    const now = new Date().getTime();
+    
+    let overdue = 0;
+    let dueToday = 0;
+    let newCards = 0;
+    let dueThisWeek = 0;
+    
+    cards.forEach(card => {
+      if (card.reviewCount === 0) {
+        newCards++;
+      } else if (card.nextReview) {
+        const reviewTime = new Date(card.nextReview).getTime();
+        const daysDifference = Math.floor((reviewTime - now) / (24 * 60 * 60 * 1000));
+        
+        if (daysDifference < 0) {
+          overdue++;
+        } else if (daysDifference === 0) {
+          dueToday++;
+        } else if (daysDifference <= 7) {
+          dueThisWeek++;
+        }
+      }
+    });
+    
+    return { overdue, dueToday, newCards, dueThisWeek, total: cards.length };
+  };
+
+  // Calculate cards due breakdown for button display (limited to study session)
+  const getCardsDueBreakdown = () => {
+    const cards = spacedRepetitionCards;
+    const now = new Date().getTime();
+    
+    let overdue = 0;
+    let dueToday = 0;
+    let newCards = 0;
+    let dueThisWeek = 0;
+    
+    cards.forEach(card => {
+      if (card.reviewCount === 0) {
+        newCards++;
+      } else if (card.nextReview) {
+        const reviewTime = new Date(card.nextReview).getTime();
+        const daysDifference = Math.floor((reviewTime - now) / (24 * 60 * 60 * 1000));
+        
+        if (daysDifference < 0) {
+          overdue++;
+        } else if (daysDifference === 0) {
+          dueToday++;
+        } else if (daysDifference <= 7) {
+          dueThisWeek++;
+        }
+      }
+    });
+    
+    return { overdue, dueToday, newCards, dueThisWeek, total: cards.length };
+  };
+
   const handleSpacedRepetitionStudy = () => {
     const cards = spacedRepetitionCards;
     onStartStudy('spaced-repetition-20', cards);
   };
 
+  // Add keyboard event handler for Enter key to trigger Smart Review
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Enter' && (!e.target || (e.target as HTMLElement).tagName !== 'BUTTON')) {
+        e.preventDefault();
+        // Force recalculation of cards with current filters to avoid stale data
+        const currentCards = selectSpacedRepetitionCards();
+        if (currentCards.length > 0) {
+          onStartStudy('spaced-repetition-20', currentCards);
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [selectedCategories, selectedRecency, selectedDifficulties, deck.cards, onStartStudy]);
+
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="max-w-2xl mx-auto px-4">
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-cyan-500 bg-clip-text text-transparent">
           Choose Study Mode
@@ -450,8 +611,8 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
       {/* Spaced Repetition Quick Start */}
       <div className="mb-6">
         <div className="bg-gradient-to-r from-purple-600/20 to-cyan-500/20 border border-cyan-500/30 rounded-xl p-4 md:p-6 glass-effect">
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
-            <div className="flex-1 mb-4 md:mb-0">
+          <div className="space-y-4">
+            <div>
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <Brain className="w-5 h-5 md:w-6 md:h-6 text-cyan-neon" />
                 <h3 className="text-lg md:text-xl font-bold text-text-primary">Smart Review Session</h3>
@@ -460,19 +621,52 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
                 </span>
               </div>
               <p className="text-text-secondary text-sm mb-3">
-                Study 20 cards selected by our spaced repetition algorithm. Focuses on cards that need review most for optimal retention.
+                Advanced spaced repetition algorithm intelligently selects up to 20 cards based on learning science. Dynamically prioritizes overdue cards, integrates new material, and adapts to your filter preferences for maximum retention efficiency.
               </p>
-              <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs text-text-secondary">
-                <span>• Prioritizes overdue cards</span>
-                <span>• Includes new cards</span>
-                <span>• Optimized for memory retention</span>
-              </div>
+              {(() => {
+                const breakdown = getAllCardsDueBreakdown();
+                return (
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs">
+                    {breakdown.overdue > 0 && (
+                      <span className="flex items-center gap-1 text-red-400">
+                        <Flame className="w-3 h-3" />
+                        {breakdown.overdue} overdue
+                      </span>
+                    )}
+                    {breakdown.dueToday > 0 && (
+                      <span className="flex items-center gap-1 text-yellow-400">
+                        <Zap className="w-3 h-3" />
+                        {breakdown.dueToday} due today
+                      </span>
+                    )}
+                    {breakdown.newCards > 0 && (
+                      <span className="flex items-center gap-1 text-cyan-400">
+                        <Star className="w-3 h-3" />
+                        {breakdown.newCards} new
+                      </span>
+                    )}
+                    {breakdown.total === 0 && (
+                      <span className="text-text-secondary">
+                        No cards match current filters
+                      </span>
+                    )}
+                    {breakdown.total > 0 && breakdown.overdue === 0 && breakdown.dueToday === 0 && breakdown.newCards === 0 && (
+                      <span className="flex items-center gap-1 text-green-400 bg-green-400/10 px-2 py-1 rounded-md border border-green-400/20">
+                        <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                        </svg>
+                        All caught up! No cards due
+                      </span>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
-            <div className="md:ml-6 w-full md:w-auto">
+            <div className="w-full">
               <Button
                 onClick={handleSpacedRepetitionStudy}
                 disabled={spacedRepetitionCards.length === 0}
-                className="w-full md:w-auto px-6 md:px-8 py-3 md:py-4 bg-gradient-to-r from-purple-600 to-cyan-500 text-black font-bold rounded-xl hover:shadow-lg hover:shadow-purple-600/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-cyan-500 text-black font-bold rounded-xl hover:shadow-lg hover:shadow-purple-600/30 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Brain className="w-4 h-4 md:w-5 md:h-5 mr-2" />
                 <span className="hidden md:inline">Start Smart Review</span>
@@ -806,7 +1000,11 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
               </div>
             </div>
             <button
-              onClick={() => setShuffleCards(!shuffleCards)}
+              onClick={() => {
+                const newShuffleValue = !shuffleCards;
+                setShuffleCards(newShuffleValue);
+                setTimeout(() => savePreferences({ shuffleCards: newShuffleValue }), 10);
+              }}
               className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors duration-300 ${
                 shuffleCards ? 'bg-cyan-500' : 'bg-text-secondary/30'
               }`}
@@ -821,21 +1019,31 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
         </div>
       </div>
 
-      <div className="flex space-x-4">
+      <div className="space-y-3">
+        <div className="flex gap-3">
+          <Button
+            onClick={handleQuickStudy}
+            disabled={filteredCards.length === 0}
+            className="w-1/2 px-4 py-3 bg-gradient-to-r from-purple-500 to-cyan-400 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-purple-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Brain className="w-4 h-4 mr-2" />
+            Quick (20)
+          </Button>
+          <Button
+            onClick={handleStartStudy}
+            disabled={filteredCards.length === 0}
+            className="w-1/2 px-4 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <Play className="w-4 h-4 mr-2" />
+            Study ({filteredCards.length})
+          </Button>
+        </div>
         <Button
           onClick={onCancel}
           variant="outline"
-          className="flex-1 px-6 py-3 glass-effect border border-text-secondary/20 text-text-secondary rounded-xl hover:border-cyan-500/30 transition-all duration-300"
+          className="w-full px-6 py-3 glass-effect border border-text-secondary/20 text-text-secondary rounded-xl hover:border-cyan-500/30 transition-all duration-300"
         >
           Cancel
-        </Button>
-        <Button
-          onClick={handleStartStudy}
-          disabled={filteredCards.length === 0}
-          className="flex-1 px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          <Play className="w-4 h-4 mr-2" />
-          Start Study ({filteredCards.length} cards)
         </Button>
       </div>
     </div>

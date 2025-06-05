@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Plus, BookOpen, TrendingUp, Brain, ChevronDown, BarChart3, Clock, Target, Tag, RotateCcw } from 'lucide-react';
+import { Plus, BookOpen, TrendingUp, Brain, ChevronDown, BarChart3, Clock, Target, Tag, RotateCcw, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ViewSelector } from '@/components/view-selector';
 import { DeckCard } from '@/components/deck-card';
@@ -16,9 +16,10 @@ import { AlertModal } from '@/components/alert-modal';
 import { ConfirmationModal } from '../components/confirmation-modal';
 import { ExitStudyModal } from '@/components/exit-study-modal';
 import { AboutModal } from '@/components/about-modal';
+import { CardDetailsModal } from '@/components/card-details-modal';
 import { AnimatedBackground } from '@/components/animated-background';
 import { LocalStorage } from '@/lib/storage';
-import { Deck, StudySession, AppStats, ViewType, CreateDeckData, CreateCardData, Flashcard } from '@/lib/types';
+import { Deck, StudySession, AppStats, ViewType, CreateDeckData, CreateCardData, Flashcard, StudySessionMetadata } from '@/lib/types';
 
 export default function Home() {
   const [currentView, setCurrentView] = useState<ViewType>('decks');
@@ -54,12 +55,47 @@ export default function Home() {
     correct: 0,
     incorrect: 0,
   });
+  const [studySessionMetadata, setStudySessionMetadata] = useState<StudySessionMetadata | null>(null);
   const [resetStatsConfirmation, setResetStatsConfirmation] = useState(false);
   const [exitStudyConfirmation, setExitStudyConfirmation] = useState(false);
   const [pendingViewChange, setPendingViewChange] = useState<ViewType | null>(null);
   const [isAboutModalOpen, setIsAboutModalOpen] = useState(false);
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null);
   const [lastStudiedDeckId, setLastStudiedDeckId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState<Array<{card: Flashcard, deckName: string, deckId: string}>>([]);
+  const [selectedCard, setSelectedCard] = useState<{card: Flashcard, deckName: string} | null>(null);
+
+  // Search functionality
+  const performSearch = (query: string) => {
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const results: Array<{card: Flashcard, deckName: string, deckId: string}> = [];
+    const searchTerm = query.toLowerCase();
+
+    decks.forEach(deck => {
+      deck.cards.forEach(card => {
+        const matchesQuestion = card.question.toLowerCase().includes(searchTerm);
+        const matchesAnswer = card.answer.toLowerCase().includes(searchTerm);
+        const matchesCategory = card.categories.some(cat => 
+          cat.toLowerCase().includes(searchTerm)
+        );
+
+        if (matchesQuestion || matchesAnswer || matchesCategory) {
+          results.push({
+            card,
+            deckName: deck.name,
+            deckId: deck.id
+          });
+        }
+      });
+    });
+
+    setSearchResults(results.slice(0, 10)); // Limit to 10 results
+  };
 
   // Calculate active stats decks and selected decks for modals
   const getDefaultStatsDeck = () => {
@@ -84,6 +120,263 @@ export default function Home() {
     loadData();
   }, []);
 
+  const selectSpacedRepetitionCards = (cards: Flashcard[], filters?: {
+    categories?: string[];
+    difficulties?: string[];
+    recency?: string[];
+  }) => {
+    const now = new Date().getTime();
+    
+    // Apply filters if provided
+    let filteredCards = cards;
+    
+    if (filters) {
+      // Filter by categories
+      if (filters.categories && filters.categories.length > 0) {
+        filteredCards = filteredCards.filter(card => {
+          if (card.categories.length === 0) {
+            return filters.categories!.includes('Uncategorized');
+          }
+          return card.categories.some(category => filters.categories!.includes(category));
+        });
+      }
+      
+      // Filter by difficulties
+      if (filters.difficulties && filters.difficulties.length > 0) {
+        filteredCards = filteredCards.filter(card => {
+          const cardDifficulty = card.difficulty || 'ungraded';
+          return filters.difficulties!.includes(cardDifficulty);
+        });
+      }
+      
+      // Filter by recency (simplified for Smart Review)
+      if (filters.recency && filters.recency.length > 0) {
+        const reviewedCards = filteredCards.filter(card => card.lastReviewed);
+        const neverReviewedCards = filteredCards.filter(card => !card.lastReviewed);
+        
+        let recencyFilteredCards: Flashcard[] = [];
+        
+        // Add never reviewed cards if 'fresh' is selected
+        if (filters.recency.includes('fresh')) {
+          recencyFilteredCards.push(...neverReviewedCards);
+        }
+        
+        // Add reviewed cards based on recency segments
+        if (reviewedCards.length > 0) {
+          const sortedByRecency = reviewedCards.sort((a, b) => 
+            new Date(b.lastReviewed!).getTime() - new Date(a.lastReviewed!).getTime()
+          );
+          
+          const segmentSize = Math.max(1, Math.ceil(sortedByRecency.length / 4));
+          
+          if (filters.recency.includes('familiar')) {
+            recencyFilteredCards.push(...sortedByRecency.slice(0, segmentSize));
+          }
+          if (filters.recency.includes('fuzzy')) {
+            recencyFilteredCards.push(...sortedByRecency.slice(segmentSize, segmentSize * 2));
+          }
+          if (filters.recency.includes('forgotten')) {
+            recencyFilteredCards.push(...sortedByRecency.slice(segmentSize * 2));
+          }
+        }
+        
+        filteredCards = recencyFilteredCards;
+      }
+    }
+    
+    // Calculate priority score for each filtered card (lower score = higher priority)
+    const cardsWithPriority = filteredCards.map(card => {
+      let priority = 0;
+      let difficultyRank = 0; // Secondary sort for tie-breaking
+      let recencyRank = 0; // Tertiary sort for when difficulty is also tied
+      
+      // Priority 1: Overdue cards (nextReview has passed)
+      if (card.nextReview && new Date(card.nextReview).getTime() <= now) {
+        const overdueDays = Math.floor((now - new Date(card.nextReview).getTime()) / (24 * 60 * 60 * 1000));
+        priority = -1000 - overdueDays; // Most overdue first
+      }
+      // Priority 2: Never reviewed cards
+      else if (!card.lastReviewed) {
+        priority = -500;
+      }
+      // Priority 3: Cards reviewed but not yet due
+      else if (card.lastReviewed) {
+        const daysSinceReview = Math.floor((now - new Date(card.lastReviewed).getTime()) / (24 * 60 * 60 * 1000));
+        // Factor in difficulty - harder cards get higher priority
+        const difficultyMultiplier = card.difficulty === 'hard' ? 2 : card.difficulty === 'good' ? 1.5 : 1;
+        priority = daysSinceReview * difficultyMultiplier;
+      }
+      
+      // Set difficulty rank for tie-breaking (lower = harder)
+      difficultyRank = card.difficulty === 'hard' ? 0 : card.difficulty === 'good' ? 1 : 2;
+      
+      // Set recency rank for final tie-breaking (older = higher priority)
+      if (card.lastReviewed) {
+        recencyRank = -new Date(card.lastReviewed).getTime(); // Negative so older dates are smaller (higher priority)
+      } else {
+        recencyRank = 0; // Never reviewed cards get neutral recency
+      }
+      
+      return { card, priority, difficultyRank, recencyRank };
+    });
+    
+    // Group cards by priority tiers for better shuffling
+    const overdueCards: typeof cardsWithPriority = [];
+    const newCards: typeof cardsWithPriority = [];
+    const recentCards: typeof cardsWithPriority = [];
+    
+    cardsWithPriority.forEach(item => {
+      if (item.priority < -500) {
+        overdueCards.push(item);
+      } else if (item.priority === -500) {
+        newCards.push(item);
+      } else {
+        recentCards.push(item);
+      }
+    });
+    
+    // Fisher-Yates shuffle function
+    const shuffleArray = (array: typeof cardsWithPriority) => {
+      const shuffled = [...array];
+      for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+      }
+      return shuffled;
+    };
+    
+    // Sort each priority group by difficulty and recency, then shuffle within equal priority subgroups
+    const sortAndShuffleTier = (tier: typeof cardsWithPriority) => {
+      // Group by exact priority value
+      const priorityGroups = new Map<number, typeof cardsWithPriority>();
+      
+      tier.forEach(item => {
+        if (!priorityGroups.has(item.priority)) {
+          priorityGroups.set(item.priority, []);
+        }
+        priorityGroups.get(item.priority)!.push(item);
+      });
+      
+      // Sort each priority group by difficulty and recency, then shuffle
+      const result: typeof cardsWithPriority = [];
+      Array.from(priorityGroups.entries())
+        .sort(([a], [b]) => a - b) // Sort by priority (lower = higher priority)
+        .forEach(([, group]) => {
+          // Sort by difficulty and recency within the priority group
+          const sortedGroup = group.sort((a, b) => {
+            if (a.difficultyRank !== b.difficultyRank) {
+              return a.difficultyRank - b.difficultyRank;
+            }
+            return a.recencyRank - b.recencyRank;
+          });
+          
+          // Shuffle the sorted group to randomize cards with same priority+difficulty+recency
+          result.push(...shuffleArray(sortedGroup));
+        });
+      
+      return result;
+    };
+    
+    // Process each tier and combine
+    const processedOverdue = sortAndShuffleTier(overdueCards);
+    const processedNew = sortAndShuffleTier(newCards);
+    const processedRecent = sortAndShuffleTier(recentCards);
+    
+    // Combine tiers in priority order and take first 20 cards
+    const finalCards = [
+      ...processedOverdue,
+      ...processedNew,
+      ...processedRecent
+    ]
+      .slice(0, 20)
+      .map(item => item.card);
+    
+    return finalCards;
+  };
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      // Don't trigger shortcuts if user is typing in an input/textarea or modal is open
+      const isInputFocused = document.activeElement?.tagName === 'INPUT' || 
+                            document.activeElement?.tagName === 'TEXTAREA' ||
+                            document.activeElement?.getAttribute('contenteditable') === 'true';
+      
+      const isModalOpen = isCreateModalOpen || isEditModalOpen || isAddCardModalOpen || 
+                         isImportModalOpen || isSessionCompleteModalOpen || showQuestionBreakdown || 
+                         showCategoryStats || alertModal.isOpen || isAboutModalOpen || exitStudyConfirmation;
+
+      if (isInputFocused || isModalOpen) return;
+
+      switch (event.code) {
+        case 'Enter':
+          event.preventDefault();
+          if (currentView === 'decks' && selectedDeckId) {
+            // Move to study view with selected deck
+            setCurrentView('study');
+          } else if (currentView === 'study' && !currentStudyDeck && selectedDeckId) {
+            // Start Smart Review with selected deck and current filters
+            const selectedDeck = decks.find(deck => deck.id === selectedDeckId);
+            if (selectedDeck && selectedDeck.cards.length > 0) {
+              // Get current filter preferences for Smart Review
+              const filterPrefs = LocalStorage.getStudyFilterPreferences();
+              const filters = {
+                categories: filterPrefs.selectedCategories,
+                difficulties: filterPrefs.selectedDifficulties,
+                recency: filterPrefs.selectedRecency
+              };
+              
+              // Generate spaced repetition cards for Smart Review with filters
+              const spacedRepetitionCards = selectSpacedRepetitionCards(selectedDeck.cards, filters);
+              if (spacedRepetitionCards.length > 0) {
+                handleStudyModeStart('spaced-repetition-20', spacedRepetitionCards, filters);
+              } else {
+                showAlert('No Cards Available', 'No cards available for Smart Review with current filters!');
+              }
+            }
+          }
+          break;
+        
+        case 'Escape':
+          event.preventDefault();
+          if (currentView === 'study') {
+            if (!currentStudyDeck) {
+              // Return to deck view from study mode selector
+              setCurrentView('decks');
+              setStudyModeSelection(null);
+            } else {
+              // In active study session, trigger exit confirmation modal
+              handleExitStudy('decks');
+            }
+          }
+          break;
+        
+        case 'ArrowLeft':
+          if (currentView === 'decks' && decks.length > 0) {
+            event.preventDefault();
+            const currentIndex = selectedDeckId ? decks.findIndex(deck => deck.id === selectedDeckId) : -1;
+            const newIndex = currentIndex <= 0 ? decks.length - 1 : currentIndex - 1;
+            setSelectedDeckId(decks[newIndex].id);
+          }
+          break;
+        
+        case 'ArrowRight':
+          if (currentView === 'decks' && decks.length > 0) {
+            event.preventDefault();
+            const currentIndex = selectedDeckId ? decks.findIndex(deck => deck.id === selectedDeckId) : -1;
+            const newIndex = currentIndex >= decks.length - 1 ? 0 : currentIndex + 1;
+            setSelectedDeckId(decks[newIndex].id);
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyPress);
+    return () => window.removeEventListener('keydown', handleKeyPress);
+  }, [currentView, selectedDeckId, decks, currentStudyDeck, isCreateModalOpen, isEditModalOpen, 
+      isAddCardModalOpen, isImportModalOpen, isSessionCompleteModalOpen, showQuestionBreakdown, 
+      showCategoryStats, alertModal.isOpen, isAboutModalOpen, exitStudyConfirmation]);
+
   useEffect(() => {
     if (decks.length > 0) {
       const calculatedStats = LocalStorage.calculateStats(decks, sessions);
@@ -91,6 +384,23 @@ export default function Home() {
       LocalStorage.saveStats(calculatedStats);
     }
   }, [decks, sessions]);
+
+  // Auto-select deck when decks change
+  useEffect(() => {
+    if (decks.length > 0 && !selectedDeckId) {
+      // Select first deck if no deck is selected
+      setSelectedDeckId(decks[0].id);
+    } else if (decks.length > 0 && selectedDeckId) {
+      // Check if selected deck still exists, if not select first available
+      const selectedDeckExists = decks.some(deck => deck.id === selectedDeckId);
+      if (!selectedDeckExists) {
+        setSelectedDeckId(decks[0].id);
+      }
+    } else if (decks.length === 0) {
+      // Clear selection if no decks exist
+      setSelectedDeckId(null);
+    }
+  }, [decks, selectedDeckId]);
 
   const loadData = () => {
     const loadedDecks = LocalStorage.getDecks();
@@ -100,6 +410,11 @@ export default function Home() {
     setDecks(loadedDecks);
     setSessions(loadedSessions);
     setStats(loadedStats);
+    
+    // Auto-select first deck if no deck is selected and decks exist
+    if (loadedDecks.length > 0 && !selectedDeckId) {
+      setSelectedDeckId(loadedDecks[0].id);
+    }
   };
 
   const createDeck = (data: CreateDeckData) => {
@@ -121,6 +436,7 @@ export default function Home() {
     const updatedDecks = [...decks, newDeck];
     setDecks(updatedDecks);
     LocalStorage.saveDecks(updatedDecks);
+    setSelectedDeckId(newDeck.id); // Auto-select the newly created deck
   };
 
   const createSampleDeck = () => {
@@ -135,6 +451,40 @@ export default function Home() {
     const updatedDecks = [...decks, deck];
     setDecks(updatedDecks);
     LocalStorage.saveDecks(updatedDecks);
+    setSelectedDeckId(deck.id); // Auto-select the newly imported deck
+  };
+
+  const addCardsToExistingDeck = (deckId: string, cards: Flashcard[]) => {
+    const updatedDecks = decks.map(deck => {
+      if (deck.id === deckId) {
+        // Check for duplicates and add unique cards only
+        const existingQuestions = new Set(deck.cards.map(card => card.question.toLowerCase().trim()));
+        const newCards = cards.filter(card => !existingQuestions.has(card.question.toLowerCase().trim()));
+        
+        return {
+          ...deck,
+          cards: [...deck.cards, ...newCards]
+        };
+      }
+      return deck;
+    });
+    
+    setDecks(updatedDecks);
+    LocalStorage.saveDecks(updatedDecks);
+    
+    // Show success message
+    const targetDeck = decks.find(deck => deck.id === deckId);
+    const addedCount = cards.filter(card => {
+      const existingQuestions = new Set(targetDeck?.cards.map(c => c.question.toLowerCase().trim()) || []);
+      return !existingQuestions.has(card.question.toLowerCase().trim());
+    }).length;
+    const skippedCount = cards.length - addedCount;
+    
+    setAlertModal({
+      isOpen: true,
+      title: 'Cards Added Successfully',
+      message: `Added ${addedCount} new cards to "${targetDeck?.name}"${skippedCount > 0 ? `. Skipped ${skippedCount} duplicate cards.` : '.'}`
+    });
   };
 
   const deleteDeck = (deckId: string) => {
@@ -266,9 +616,84 @@ export default function Home() {
     setStudySessionCards([]);
     setCurrentCardIndex(0);
     setStudySessionStats({ correct: 0, incorrect: 0 });
+    setStudySessionMetadata(null);
     setPendingViewChange(null);
     setExitStudyConfirmation(false);
     setCurrentView(targetView);
+  };
+
+  const restartStudySession = () => {
+    if (!studySessionMetadata) return;
+
+    // Get the updated deck from current state
+    const updatedDeck = decks.find(d => d.id === studySessionMetadata.originalDeck.id);
+    if (!updatedDeck) {
+      showAlert('Error', 'Deck not found for restart');
+      return;
+    }
+
+    // Recalculate cards based on the original study mode and filters
+    let newCards: Flashcard[] = [];
+    
+    switch (studySessionMetadata.mode) {
+      case 'spaced-repetition-20':
+        // Use stored filters or current filter preferences
+        const filters = studySessionMetadata.filters || {
+          categories: LocalStorage.getStudyFilterPreferences().selectedCategories,
+          difficulties: LocalStorage.getStudyFilterPreferences().selectedDifficulties,
+          recency: LocalStorage.getStudyFilterPreferences().selectedRecency
+        };
+        newCards = selectSpacedRepetitionCards(updatedDeck.cards, filters);
+        break;
+      case 'quick-random-20':
+        newCards = [...updatedDeck.cards];
+        // Apply Fisher-Yates shuffle
+        for (let i = newCards.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [newCards[i], newCards[j]] = [newCards[j], newCards[i]];
+        }
+        // Take first 20 cards (or all if less than 20)
+        newCards = newCards.slice(0, Math.min(20, newCards.length));
+        break;
+      case 'shuffled':
+        newCards = [...updatedDeck.cards];
+        // Apply Fisher-Yates shuffle
+        for (let i = newCards.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [newCards[i], newCards[j]] = [newCards[j], newCards[i]];
+        }
+        break;
+      case 'sequence':
+        newCards = [...updatedDeck.cards];
+        break;
+      case 'not-easy':
+        newCards = updatedDeck.cards.filter(card => card.difficulty !== 'easy');
+        break;
+      case 'not-difficult':
+        newCards = updatedDeck.cards.filter(card => card.difficulty !== 'hard');
+        break;
+      default:
+        newCards = [...updatedDeck.cards];
+    }
+
+    if (newCards.length === 0) {
+      showAlert('No Cards Available', 'No cards available for this study mode!');
+      return;
+    }
+
+    // Update metadata with current deck state
+    const updatedMetadata = {
+      ...studySessionMetadata,
+      originalDeck: updatedDeck
+    };
+
+    // Restart the study session
+    setCurrentStudyDeck(updatedDeck);
+    setStudySessionCards(newCards);
+    setCurrentCardIndex(0);
+    setStudySessionStats({ correct: 0, incorrect: 0 });
+    setStudySessionMetadata(updatedMetadata);
+    setIsSessionCompleteModalOpen(false);
   };
 
   const discardStudySession = () => {
@@ -300,7 +725,7 @@ export default function Home() {
     setCurrentView('study');
   };
 
-  const handleStudyModeStart = (mode: StudyMode, cards: any[]) => {
+  const handleStudyModeStart = (mode: StudyMode, cards: any[], filters?: any) => {
     if (cards.length === 0) {
       showAlert('No Cards Available', 'No cards available for this study mode!');
       return;
@@ -323,10 +748,18 @@ export default function Home() {
       return;
     }
 
+    // Store study session metadata for restart functionality
+    const metadata: StudySessionMetadata = {
+      mode,
+      originalDeck: deckToStudy,
+      filters
+    };
+
     setCurrentStudyDeck(deckToStudy);
     setStudySessionCards(cards);
     setCurrentCardIndex(0);
     setStudySessionStats({ correct: 0, incorrect: 0 });
+    setStudySessionMetadata(metadata);
     setStudyModeSelection(null);
   };
 
@@ -473,8 +906,7 @@ export default function Home() {
       });
       setLastStudiedDeckId(currentStudyDeck.id);
       setIsSessionCompleteModalOpen(true);
-      setCurrentStudyDeck(null);
-      setStudySessionCards([]);
+      // Don't clear study deck and metadata yet - keep for restart functionality
     }
   };
 
@@ -534,10 +966,10 @@ export default function Home() {
         </div>
         
         <div 
-          className={`gap-6 mb-8 ${
+          className={`gap-6 ${
             decks.length === 1 
-              ? "flex justify-center" 
-              : "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3"
+              ? "flex flex-col items-center" 
+              : "grid grid-cols-1 md:grid-cols-2"
           }`}
           onClick={(e) => {
             // Prevent clearing selection when clicking in empty areas
@@ -545,7 +977,34 @@ export default function Home() {
           }}
         >
           {decks.length === 1 && (
-            <div className="w-full max-w-md">
+            <>
+              <div className="w-full max-w-md">
+                {decks.map((deck) => (
+                  <DeckCard
+                    key={deck.id}
+                    deck={deck}
+                    onEdit={editDeck}
+                    onDelete={deleteDeck}
+                    onStudy={startStudySession}
+                    onSelect={selectDeck}
+                    isSelected={selectedDeckId === deck.id}
+                  />
+                ))}
+              </div>
+              <div className="w-full max-w-md">
+                <Button
+                  onClick={() => setIsImportModalOpen(true)}
+                  variant="outline"
+                  className="w-full px-6 py-3 glass-effect border border-cyan-500/20 text-cyan-400 rounded-xl hover:border-cyan-500/40 hover:bg-cyan-500/5 transition-all duration-300"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Import from CSV
+                </Button>
+              </div>
+            </>
+          )}
+          {decks.length > 1 && (
+            <>
               {decks.map((deck) => (
                 <DeckCard
                   key={deck.id}
@@ -557,31 +1016,90 @@ export default function Home() {
                   isSelected={selectedDeckId === deck.id}
                 />
               ))}
-            </div>
+              <div className="flex justify-center md:col-span-2">
+                <Button
+                  onClick={() => setIsImportModalOpen(true)}
+                  variant="outline"
+                  className="px-6 py-3 glass-effect border border-cyan-500/20 text-cyan-400 rounded-xl hover:border-cyan-500/40 hover:bg-cyan-500/5 transition-all duration-300"
+                >
+                  <Plus className="w-5 h-5 mr-2" />
+                  Import from CSV
+                </Button>
+              </div>
+            </>
           )}
-          {decks.length > 1 && decks.map((deck) => (
-            <DeckCard
-              key={deck.id}
-              deck={deck}
-              onEdit={editDeck}
-              onDelete={deleteDeck}
-              onStudy={startStudySession}
-              onSelect={selectDeck}
-              isSelected={selectedDeckId === deck.id}
-            />
-          ))}
         </div>
         
-        <div className="flex justify-center">
-          <Button
-            onClick={() => setIsImportModalOpen(true)}
-            variant="outline"
-            className="px-6 py-3 glass-effect border border-cyan-500/20 text-cyan-400 rounded-xl hover:border-cyan-500/40 hover:bg-cyan-500/5 transition-all duration-300"
-          >
-            <Plus className="w-5 h-5 mr-2" />
-            Import from CSV
-          </Button>
-        </div>
+        {/* Bottom padding for floating search bar */}
+        <div className="pb-24"></div>
+
+        {/* Floating Search Bar - Only show on deck view */}
+        {currentView === 'decks' && (
+          <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 w-full max-w-md px-4">
+            {/* Search Results */}
+            {searchResults.length > 0 && (
+              <div className="mb-3 glass-effect border border-cyan-500/30 rounded-xl p-2 max-h-60 overflow-y-auto">
+                {searchResults.map((result, index) => (
+                  <button
+                    key={`${result.deckId}-${result.card.id}`}
+                    onClick={() => setSelectedCard({ card: result.card, deckName: result.deckName })}
+                    className="w-full p-3 hover:bg-cyan-500/10 rounded-lg transition-colors duration-200 text-left border-b border-white/10 last:border-b-0"
+                  >
+                    <div className="text-sm font-medium text-text-primary mb-1 truncate">
+                      {result.card.question}
+                    </div>
+                    <div className="text-xs text-text-secondary truncate mb-1">
+                      {result.card.answer}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-cyan-400">{result.deckName}</span>
+                      {result.card.categories.length > 0 && (
+                        <div className="flex gap-1">
+                          {result.card.categories.slice(0, 2).map((cat, i) => (
+                            <span key={i} className="text-xs text-purple-400 bg-purple-500/20 px-1 py-0.5 rounded">
+                              {cat}
+                            </span>
+                          ))}
+                          {result.card.categories.length > 2 && (
+                            <span className="text-xs text-text-secondary">+{result.card.categories.length - 2}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Search Input */}
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <Search className="h-5 w-5 text-text-secondary" />
+              </div>
+              <input
+                type="text"
+                placeholder="Search cards..."
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  performSearch(e.target.value);
+                }}
+                className="w-full pl-10 pr-10 py-3 glass-effect border border-cyan-500/30 rounded-xl text-text-primary placeholder-text-secondary bg-transparent focus:outline-none focus:border-cyan-500/50 focus:ring-2 focus:ring-cyan-500/20"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => {
+                    setSearchQuery('');
+                    setSearchResults([]);
+                  }}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <X className="h-5 w-5 text-text-secondary hover:text-text-primary transition-colors" />
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </>
     );
   };
@@ -903,6 +1421,191 @@ export default function Home() {
           </div>
         </div>
 
+        {/* Spaced Repetition Analytics */}
+        {selectedDecks.some(deck => deck.cards.some(card => card.reviewCount > 0)) && (
+          <div className="space-y-6 mb-8">
+            <div className="glass-effect holographic rounded-2xl p-6">
+              <h3 className="text-xl font-semibold mb-4 text-cyan-neon">Spaced Repetition Analytics</h3>
+              
+              {/* Card Status Overview */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                {(() => {
+                  const allCards = selectedDecks.flatMap(deck => deck.cards);
+                  const newCards = allCards.filter(card => card.reviewCount === 0).length;
+                  const learningCards = allCards.filter(card => card.reviewCount > 0 && card.reviewCount < 3).length;
+                  const reviewCards = allCards.filter(card => card.reviewCount >= 3 && (!card.nextReview || new Date(card.nextReview) <= new Date())).length;
+                  const masteredCards = allCards.filter(card => card.reviewCount >= 5 && card.nextReview && new Date(card.nextReview) > new Date()).length;
+                  
+                  return (
+                    <>
+                      <div className="text-center p-3 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
+                        <div className="text-2xl font-bold text-cyan-400 mb-1">{newCards}</div>
+                        <div className="text-sm text-text-secondary">New</div>
+                      </div>
+                      <div className="text-center p-3 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
+                        <div className="text-2xl font-bold text-yellow-400 mb-1">{learningCards}</div>
+                        <div className="text-sm text-text-secondary">Learning</div>
+                      </div>
+                      <div className="text-center p-3 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                        <div className="text-2xl font-bold text-purple-400 mb-1">{reviewCards}</div>
+                        <div className="text-sm text-text-secondary">Review</div>
+                      </div>
+                      <div className="text-center p-3 bg-green-500/10 rounded-xl border border-green-500/20">
+                        <div className="text-2xl font-bold text-green-400 mb-1">{masteredCards}</div>
+                        <div className="text-sm text-text-secondary">Mastered</div>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+
+              {/* Next Review Schedule */}
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold mb-3 text-purple-neon">Next Review Schedule</h4>
+                <div className="space-y-2">
+                  {(() => {
+                    const allCards = selectedDecks.flatMap(deck => deck.cards);
+                    const now = new Date();
+                    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+                    const tomorrow = new Date(today.getTime() + 24 * 60 * 60 * 1000);
+                    const nextWeek = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
+                    
+                    const dueToday = allCards.filter(card => 
+                      card.nextReview && new Date(card.nextReview) <= tomorrow
+                    ).length;
+                    
+                    const dueThisWeek = allCards.filter(card => 
+                      card.nextReview && 
+                      new Date(card.nextReview) > tomorrow && 
+                      new Date(card.nextReview) <= nextWeek
+                    ).length;
+                    
+                    const dueLater = allCards.filter(card => 
+                      card.nextReview && new Date(card.nextReview) > nextWeek
+                    ).length;
+                    
+                    return (
+                      <>
+                        <div className="flex justify-between items-center p-3 bg-red-500/10 rounded-lg border border-red-500/20">
+                          <span className="text-text-primary">Due Today/Tomorrow</span>
+                          <span className="font-bold text-red-400">{dueToday} cards</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-yellow-500/10 rounded-lg border border-yellow-500/20">
+                          <span className="text-text-primary">Due This Week</span>
+                          <span className="font-bold text-yellow-400">{dueThisWeek} cards</span>
+                        </div>
+                        <div className="flex justify-between items-center p-3 bg-green-500/10 rounded-lg border border-green-500/20">
+                          <span className="text-text-primary">Due Later</span>
+                          <span className="font-bold text-green-400">{dueLater} cards</span>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Difficulty Distribution */}
+              <div className="mb-6">
+                <h4 className="text-lg font-semibold mb-3 text-green-400">Difficulty Distribution</h4>
+                <div className="grid grid-cols-3 gap-4">
+                  {(() => {
+                    const allCards = selectedDecks.flatMap(deck => deck.cards);
+                    const reviewedCards = allCards.filter(card => card.difficulty !== undefined);
+                    
+                    const easyCards = reviewedCards.filter(card => card.difficulty === 'easy').length;
+                    const goodCards = reviewedCards.filter(card => card.difficulty === 'good').length;
+                    const hardCards = reviewedCards.filter(card => card.difficulty === 'hard').length;
+                    const total = reviewedCards.length;
+                    
+                    if (total === 0) {
+                      return (
+                        <div className="col-span-3 text-center text-text-secondary p-4">
+                          No difficulty data available yet. Complete some reviews to see distribution.
+                        </div>
+                      );
+                    }
+                    
+                    return (
+                      <>
+                        <div className="text-center p-3 bg-green-500/10 rounded-xl border border-green-500/20">
+                          <div className="text-xl font-bold text-green-400 mb-1">{Math.round((easyCards / total) * 100)}%</div>
+                          <div className="text-sm text-text-secondary">Easy</div>
+                          <div className="text-xs text-text-secondary mt-1">{easyCards} cards</div>
+                        </div>
+                        <div className="text-center p-3 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
+                          <div className="text-xl font-bold text-yellow-400 mb-1">{Math.round((goodCards / total) * 100)}%</div>
+                          <div className="text-sm text-text-secondary">Good</div>
+                          <div className="text-xs text-text-secondary mt-1">{goodCards} cards</div>
+                        </div>
+                        <div className="text-center p-3 bg-red-500/10 rounded-xl border border-red-500/20">
+                          <div className="text-xl font-bold text-red-400 mb-1">{Math.round((hardCards / total) * 100)}%</div>
+                          <div className="text-sm text-text-secondary">Hard</div>
+                          <div className="text-xs text-text-secondary mt-1">{hardCards} cards</div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+
+              {/* Learning Curve Analysis */}
+              <div>
+                <h4 className="text-lg font-semibold mb-3 text-cyan-400">Learning Curve Analysis</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {(() => {
+                    const allCards = selectedDecks.flatMap(deck => deck.cards);
+                    const reviewedCards = allCards.filter(card => card.reviewCount > 0);
+                    
+                    if (reviewedCards.length === 0) {
+                      return (
+                        <div className="col-span-2 text-center text-text-secondary p-4">
+                          Start reviewing cards to see learning curve analysis.
+                        </div>
+                      );
+                    }
+                    
+                    const avgReviewCount = reviewedCards.reduce((sum, card) => sum + card.reviewCount, 0) / reviewedCards.length;
+                    const avgAccuracy = reviewedCards.reduce((sum, card) => {
+                      const total = card.correctCount + card.incorrectCount;
+                      return total > 0 ? sum + (card.correctCount / total) : sum;
+                    }, 0) / reviewedCards.length;
+                    
+                    const retentionRate = reviewedCards.filter(card => {
+                      const total = card.correctCount + card.incorrectCount;
+                      return total > 0 && (card.correctCount / total) >= 0.7;
+                    }).length / reviewedCards.length;
+                    
+                    const intervalEfficiency = reviewedCards.filter(card => 
+                      card.nextReview && new Date(card.nextReview) > new Date()
+                    ).length / reviewedCards.length;
+                    
+                    return (
+                      <>
+                        <div className="p-4 bg-cyan-500/10 rounded-xl border border-cyan-500/20">
+                          <div className="text-2xl font-bold text-cyan-400 mb-1">{avgReviewCount.toFixed(1)}</div>
+                          <div className="text-sm text-text-secondary">Avg Reviews per Card</div>
+                        </div>
+                        <div className="p-4 bg-purple-500/10 rounded-xl border border-purple-500/20">
+                          <div className="text-2xl font-bold text-purple-400 mb-1">{Math.round(avgAccuracy * 100)}%</div>
+                          <div className="text-sm text-text-secondary">Average Accuracy</div>
+                        </div>
+                        <div className="p-4 bg-green-500/10 rounded-xl border border-green-500/20">
+                          <div className="text-2xl font-bold text-green-400 mb-1">{Math.round(retentionRate * 100)}%</div>
+                          <div className="text-sm text-text-secondary">Retention Rate</div>
+                        </div>
+                        <div className="p-4 bg-yellow-500/10 rounded-xl border border-yellow-500/20">
+                          <div className="text-2xl font-bold text-yellow-400 mb-1">{Math.round(intervalEfficiency * 100)}%</div>
+                          <div className="text-sm text-text-secondary">Interval Efficiency</div>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {deckSessions.length > 0 && (
           <div className="glass-effect holographic rounded-2xl p-6">
             <h3 className="text-xl font-semibold mb-4 text-green-400">Session History</h3>
@@ -955,8 +1658,8 @@ export default function Home() {
       <AnimatedBackground />
 
       {/* Header */}
-      <header className="relative z-10 p-6">
-        <div className="max-w-6xl mx-auto flex items-center justify-between">
+      <header className="relative z-10 max-w-2xl mx-auto px-6 py-6">
+        <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3 group">
             <button 
               onClick={() => setIsAboutModalOpen(true)}
@@ -1001,7 +1704,7 @@ export default function Home() {
 
       {/* Main Content */}
       <main 
-        className="relative z-10 max-w-6xl mx-auto px-6 pb-12"
+        className="relative z-10 max-w-2xl mx-auto px-6 pb-12"
         onClick={(e) => {
           // Prevent any global handlers from clearing deck selection
           e.stopPropagation();
@@ -1046,6 +1749,8 @@ export default function Home() {
         isOpen={isImportModalOpen}
         onClose={() => setIsImportModalOpen(false)}
         onImport={importDeck}
+        onAddToExisting={addCardsToExistingDeck}
+        existingDecks={decks}
       />
 
       <SessionCompleteModal
@@ -1053,17 +1758,27 @@ export default function Home() {
         onClose={() => {
           setIsSessionCompleteModalOpen(false);
           setCurrentView('decks');
+          // Clear study state when modal is closed
+          setCurrentStudyDeck(null);
+          setStudySessionCards([]);
+          setStudySessionMetadata(null);
         }}
         onViewStats={() => {
           setIsSessionCompleteModalOpen(false);
           // Clear any manual stats deck selection to use default logic
           setSelectedStatsDecks([]);
           setCurrentView('stats');
+          // Clear study state when viewing stats
+          setCurrentStudyDeck(null);
+          setStudySessionCards([]);
+          setStudySessionMetadata(null);
         }}
+        onRestart={restartStudySession}
         accuracy={sessionResults.accuracy}
         cardsStudied={sessionResults.cardsStudied}
         correctAnswers={sessionResults.correctAnswers}
         incorrectAnswers={sessionResults.incorrectAnswers}
+        canRestart={!!studySessionMetadata}
       />
 
       <QuestionBreakdownModal
@@ -1108,6 +1823,16 @@ export default function Home() {
         isOpen={isAboutModalOpen}
         onClose={() => setIsAboutModalOpen(false)}
       />
+
+      {/* Card Details Modal */}
+      {selectedCard && (
+        <CardDetailsModal
+          isOpen={!!selectedCard}
+          onClose={() => setSelectedCard(null)}
+          card={selectedCard.card}
+          deckName={selectedCard.deckName}
+        />
+      )}
     </div>
   );
 }

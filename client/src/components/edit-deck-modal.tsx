@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo } from 'react';
-import { X, Edit2, Trash2, Plus, Download, Copy, FileText, Search, Filter } from 'lucide-react';
+import { X, Edit2, Trash2, Plus, Download, Copy, FileText, Search, Filter, Zap, Flame, Calendar, Star, BookOpen, CheckCircle, ArrowUpDown, ArrowUp, ArrowDown, ChevronDown, ChevronUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Deck, Flashcard } from '@/lib/types';
 import { ConfirmationModal } from './confirmation-modal';
 
@@ -29,6 +30,9 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [sortBy, setSortBy] = useState('creation');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+  const [isDeckInfoExpanded, setIsDeckInfoExpanded] = useState(false);
 
   useEffect(() => {
     if (deck) {
@@ -47,7 +51,7 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
     return Array.from(categories).sort();
   }, [deck]);
 
-  // Filter cards based on search term and category
+  // Filter and sort cards based on search term, category, and sorting options
   const filteredCards = useMemo(() => {
     if (!deck) return [];
     
@@ -64,14 +68,72 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
     }
     
     // Filter by category
-    if (selectedCategory) {
+    if (selectedCategory && selectedCategory !== 'all') {
       filtered = filtered.filter(card => 
         (card.categories || []).includes(selectedCategory)
       );
     }
     
-    return filtered;
-  }, [deck, searchTerm, selectedCategory]);
+    // Sort cards based on selected criteria
+    const sorted = [...filtered].sort((a, b) => {
+      let comparison = 0;
+      
+      switch (sortBy) {
+        case 'creation':
+          // Sort by array index (creation order)
+          const indexA = deck.cards.indexOf(a);
+          const indexB = deck.cards.indexOf(b);
+          comparison = indexA - indexB;
+          break;
+          
+        case 'alphabetical':
+          comparison = a.question.localeCompare(b.question);
+          break;
+          
+        case 'accuracy':
+          const accuracyA = a.reviewCount > 0 ? (a.correctCount / a.reviewCount) : 0;
+          const accuracyB = b.reviewCount > 0 ? (b.correctCount / b.reviewCount) : 0;
+          comparison = accuracyA - accuracyB;
+          break;
+          
+        case 'difficulty':
+          const difficultyOrder = { 'hard': 0, 'good': 1, 'easy': 2, '': 3 };
+          const diffA = difficultyOrder[a.difficulty || ''] ?? 3;
+          const diffB = difficultyOrder[b.difficulty || ''] ?? 3;
+          comparison = diffA - diffB;
+          break;
+          
+        case 'reviews':
+          comparison = a.reviewCount - b.reviewCount;
+          break;
+          
+        case 'lastReviewed':
+          const timeA = a.lastReviewed ? new Date(a.lastReviewed).getTime() : 0;
+          const timeB = b.lastReviewed ? new Date(b.lastReviewed).getTime() : 0;
+          comparison = timeA - timeB;
+          break;
+          
+        case 'nextReview':
+          const nextA = a.nextReview ? new Date(a.nextReview).getTime() : Infinity;
+          const nextB = b.nextReview ? new Date(b.nextReview).getTime() : Infinity;
+          comparison = nextA - nextB;
+          break;
+          
+        case 'categories':
+          const categoriesA = (a.categories || []).join(', ');
+          const categoriesB = (b.categories || []).join(', ');
+          comparison = categoriesA.localeCompare(categoriesB);
+          break;
+          
+        default:
+          comparison = 0;
+      }
+      
+      return sortDirection === 'desc' ? -comparison : comparison;
+    });
+    
+    return sorted;
+  }, [deck, searchTerm, selectedCategory, sortBy, sortDirection]);
 
   // Generate autocomplete suggestions
   const suggestions = useMemo(() => {
@@ -224,6 +286,74 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
     setShowSuggestions(false);
   };
 
+  // Function to get spaced repetition status for a card
+  const getSpacedRepetitionStatus = (card: Flashcard) => {
+    const now = new Date().getTime();
+    
+    // New card (never reviewed)
+    if (card.reviewCount === 0) {
+      return {
+        icon: Star,
+        text: 'New',
+        color: 'text-cyan-neon'
+      };
+    }
+
+    // Check if card is overdue
+    if (card.nextReview && new Date(card.nextReview).getTime() <= now) {
+      const overdueDays = Math.floor((now - new Date(card.nextReview).getTime()) / (24 * 60 * 60 * 1000));
+      return {
+        icon: Flame,
+        text: overdueDays === 0 ? 'Due Today' : `Overdue ${overdueDays}d`,
+        color: overdueDays === 0 ? 'text-yellow-400' : 'text-red-400'
+      };
+    }
+
+    // Check if card is due soon
+    if (card.nextReview) {
+      const daysUntilDue = Math.ceil((new Date(card.nextReview).getTime() - now) / (24 * 60 * 60 * 1000));
+      if (daysUntilDue <= 1) {
+        return {
+          icon: Zap,
+          text: 'Due Today',
+          color: 'text-yellow-400'
+        };
+      }
+      if (daysUntilDue <= 7) {
+        return {
+          icon: Calendar,
+          text: `Due in ${daysUntilDue}d`,
+          color: 'text-blue-400'
+        };
+      }
+    }
+
+    // Determine status based on performance
+    const accuracy = card.reviewCount > 0 ? (card.correctCount / card.reviewCount) : 0;
+    
+    if (accuracy >= 0.9 && card.reviewCount >= 5) {
+      return {
+        icon: CheckCircle,
+        text: 'Mastered',
+        color: 'text-green-400'
+      };
+    }
+
+    if (card.difficulty === 'hard' || accuracy < 0.6) {
+      return {
+        icon: BookOpen,
+        text: 'Learning',
+        color: 'text-orange-400'
+      };
+    }
+
+    return {
+      icon: Calendar,
+      text: 'Review',
+      color: 'text-purple-400'
+    };
+  };
+
   const handleClose = () => {
     setEditingCard(null);
     setCardQuestion('');
@@ -252,78 +382,99 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
       <div className="glass-effect holographic rounded-3xl max-w-4xl w-full max-h-[90vh] flex flex-col">
         {/* Fixed Header */}
         <div className="flex items-center justify-between p-8 pb-6 border-b border-cyan-500/20">
-          <h3 className="text-2xl font-bold text-cyan-neon">Edit Deck</h3>
-          <button
-            onClick={handleClose}
-            className="p-2 text-text-secondary hover:text-cyan-neon transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
+          <h3 className="text-2xl font-bold text-cyan-neon">Deck Details</h3>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={onAddCard}
+              className="p-2 text-text-secondary hover:text-green-400 transition-colors"
+              title="Add Card"
+            >
+              <Plus className="w-5 h-5" />
+            </button>
+            <button
+              onClick={handleClose}
+              className="p-2 text-text-secondary hover:text-cyan-neon transition-colors"
+              title="Close"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
         </div>
         
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-8 pt-6">
         
-        <form onSubmit={handleSubmit} className="mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Deck Name
-              </label>
-              <Input
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                className="w-full p-3 bg-void border border-cyan-500/20 rounded-xl text-text-primary focus:border-cyan-500 focus:outline-none transition-colors"
-                placeholder="Enter deck name"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-text-secondary mb-2">
-                Description
-              </label>
-              <Input
-                type="text"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                className="w-full p-3 bg-void border border-cyan-500/20 rounded-xl text-text-primary focus:border-cyan-500 focus:outline-none transition-colors"
-                placeholder="Deck description"
-              />
-            </div>
-          </div>
+        {/* Collapsible Deck Information Section */}
+        <div className="mb-8">
+          <button
+            type="button"
+            onClick={() => setIsDeckInfoExpanded(!isDeckInfoExpanded)}
+            className="w-full flex items-center justify-between p-4 bg-void/50 border border-cyan-500/20 rounded-xl text-text-primary hover:bg-void/70 transition-colors mb-4"
+          >
+            <h4 className="text-lg font-semibold text-cyan-neon">Deck Information</h4>
+            {isDeckInfoExpanded ? (
+              <ChevronUp className="w-5 h-5 text-text-secondary" />
+            ) : (
+              <ChevronDown className="w-5 h-5 text-text-secondary" />
+            )}
+          </button>
           
-          <div className="flex space-x-4">
-            <Button
-              type="button"
-              onClick={() => setExportModal(true)}
-              className="px-6 py-3 bg-gradient-to-r from-cyan-500/50 to-purple-600/50 text-black/80 font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300"
-            >
-              <Download className="w-4 h-4 mr-2" />
-              Export CSV
-            </Button>
-            <Button
-              type="submit"
-              className="px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
-            >
-              Save Deck Info
-            </Button>
-          </div>
-        </form>
+          {isDeckInfoExpanded && (
+            <form onSubmit={handleSubmit} className="glass-effect border border-cyan-500/20 rounded-xl p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Deck Name
+                  </label>
+                  <Input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full p-3 bg-void border border-cyan-500/20 rounded-xl text-text-primary focus:border-cyan-500 focus:outline-none transition-colors"
+                    placeholder="Enter deck name"
+                    required
+                  />
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-text-secondary mb-2">
+                    Description
+                  </label>
+                  <Textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full p-3 bg-void border border-cyan-500/20 rounded-xl text-text-primary focus:border-cyan-500 focus:outline-none transition-colors resize-none"
+                    placeholder="Deck description"
+                    rows={3}
+                  />
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button
+                  type="button"
+                  onClick={() => setExportModal(true)}
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500/50 to-purple-600/50 text-black/80 font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/10 transition-all duration-300"
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Export CSV
+                </Button>
+                <Button
+                  type="submit"
+                  className="flex-1 px-4 py-3 bg-gradient-to-r from-cyan-500 to-purple-600 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-cyan-500/20 transition-all duration-300"
+                >
+                  Save Deck Info
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
 
         <div className="border-t border-cyan-500/20 pt-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6">
             <h4 className="text-xl font-semibold text-text-primary">
               Cards ({filteredCards.length} of {deck.cards.length})
             </h4>
-            <Button
-              onClick={onAddCard}
-              className="px-4 py-2 bg-gradient-to-r from-green-500 to-cyan-500 text-black font-semibold rounded-xl hover:shadow-lg hover:shadow-green-500/20 transition-all duration-300"
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Add Card
-            </Button>
           </div>
 
           {/* Search and Filter Section */}
@@ -354,7 +505,10 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
                   {suggestions.map((suggestion, index) => (
                     <button
                       key={index}
-                      onClick={() => handleSuggestionClick(suggestion)}
+                      onMouseDown={(e) => {
+                        e.preventDefault();
+                        handleSuggestionClick(suggestion);
+                      }}
                       className="w-full px-4 py-3 text-left text-text-primary hover:bg-cyan-500/10 transition-colors border-b border-cyan-500/10 last:border-b-0"
                     >
                       {suggestion}
@@ -364,34 +518,95 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
               )}
             </div>
 
-            {/* Category Filter and Clear Filters */}
-            <div className="flex items-center space-x-4">
+            {/* Filters and Sorting Controls */}
+            <div className="flex flex-wrap items-center gap-4">
               {/* Category Filter */}
               {allCategories.length > 0 && (
                 <div className="flex items-center space-x-2">
                   <Filter className="h-4 w-4 text-text-secondary" />
-                  <select
-                    value={selectedCategory}
-                    onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-3 py-2 bg-void border border-cyan-500/20 rounded-xl text-text-primary focus:border-cyan-500 focus:outline-none transition-colors"
-                  >
-                    <option value="">All Categories</option>
-                    {allCategories.map((category) => (
-                      <option key={category} value={category}>
-                        {category}
-                      </option>
-                    ))}
-                  </select>
+                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                    <SelectTrigger className="w-48 bg-void border border-cyan-500/20 rounded-xl text-text-primary focus:border-cyan-500 focus:outline-none transition-colors">
+                      <SelectValue placeholder="All Categories" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-void border border-cyan-500/20 rounded-xl">
+                      <SelectItem value="all" className="text-text-primary hover:bg-cyan-500/10">
+                        All Categories
+                      </SelectItem>
+                      {allCategories.map((category) => (
+                        <SelectItem key={category} value={category} className="text-text-primary hover:bg-cyan-500/10">
+                          {category}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               )}
 
+              {/* Sort By */}
+              <div className="flex items-center space-x-2">
+                <ArrowUpDown className="h-4 w-4 text-text-secondary" />
+                <Select value={sortBy} onValueChange={setSortBy}>
+                  <SelectTrigger className="w-48 bg-void border border-cyan-500/20 rounded-xl text-text-primary focus:border-cyan-500 focus:outline-none transition-colors">
+                    <SelectValue placeholder="Sort by..." />
+                  </SelectTrigger>
+                  <SelectContent className="bg-void border border-cyan-500/20 rounded-xl">
+                    <SelectItem value="creation" className="text-text-primary hover:bg-cyan-500/10">
+                      Creation Order
+                    </SelectItem>
+                    <SelectItem value="alphabetical" className="text-text-primary hover:bg-cyan-500/10">
+                      Alphabetical
+                    </SelectItem>
+                    <SelectItem value="accuracy" className="text-text-primary hover:bg-cyan-500/10">
+                      Accuracy
+                    </SelectItem>
+                    <SelectItem value="difficulty" className="text-text-primary hover:bg-cyan-500/10">
+                      Difficulty
+                    </SelectItem>
+                    <SelectItem value="reviews" className="text-text-primary hover:bg-cyan-500/10">
+                      Review Count
+                    </SelectItem>
+                    <SelectItem value="lastReviewed" className="text-text-primary hover:bg-cyan-500/10">
+                      Last Reviewed
+                    </SelectItem>
+                    <SelectItem value="nextReview" className="text-text-primary hover:bg-cyan-500/10">
+                      Next Review
+                    </SelectItem>
+                    <SelectItem value="categories" className="text-text-primary hover:bg-cyan-500/10">
+                      Categories
+                    </SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Sort Direction Toggle */}
+              <Button
+                onClick={() => setSortDirection(prev => prev === 'asc' ? 'desc' : 'asc')}
+                className="px-3 py-2 bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 rounded-xl hover:bg-cyan-500/30 transition-all duration-300 flex items-center space-x-1"
+              >
+                {sortDirection === 'asc' ? (
+                  <>
+                    <ArrowUp className="h-4 w-4" />
+                    <span className="text-xs">Asc</span>
+                  </>
+                ) : (
+                  <>
+                    <ArrowDown className="h-4 w-4" />
+                    <span className="text-xs">Desc</span>
+                  </>
+                )}
+              </Button>
+
               {/* Clear Filters Button */}
-              {(searchTerm || selectedCategory) && (
+              {(searchTerm || (selectedCategory && selectedCategory !== 'all') || sortBy !== 'creation' || sortDirection !== 'asc') && (
                 <Button
-                  onClick={clearFilters}
+                  onClick={() => {
+                    clearFilters();
+                    setSortBy('creation');
+                    setSortDirection('asc');
+                  }}
                   className="px-3 py-2 bg-text-secondary/20 border border-text-secondary/30 text-text-secondary rounded-xl hover:bg-text-secondary/30 transition-all duration-300"
                 >
-                  Clear Filters
+                  Reset All
                 </Button>
               )}
             </div>
@@ -501,13 +716,31 @@ export function EditDeckModal({ isOpen, onClose, onSave, onAddCard, deck }: Edit
                           </button>
                         </div>
                       </div>
-                      {card.reviewCount > 0 && (
-                        <div className="flex items-center space-x-4 text-xs text-text-secondary pt-2 border-t border-cyan-500/10">
-                          <span>Reviews: {card.reviewCount}</span>
-                          <span>Correct: {card.correctCount}</span>
-                          <span>Accuracy: {card.reviewCount > 0 ? Math.round((card.correctCount / card.reviewCount) * 100) : 0}%</span>
+                      <div className="flex items-center justify-between text-xs text-text-secondary pt-2 border-t border-cyan-500/10">
+                        <div className="flex items-center space-x-4">
+                          {card.reviewCount > 0 && (
+                            <>
+                              <span>Reviews: {card.reviewCount}</span>
+                              <span>Correct: {card.correctCount}</span>
+                              <span>Accuracy: {card.reviewCount > 0 ? Math.round((card.correctCount / card.reviewCount) * 100) : 0}%</span>
+                            </>
+                          )}
                         </div>
-                      )}
+                        <div className="flex items-center space-x-1">
+                          {(() => {
+                            const status = getSpacedRepetitionStatus(card);
+                            const IconComponent = status.icon;
+                            return (
+                              <>
+                                <IconComponent className={`w-3 h-3 ${status.color}`} />
+                                <span className={`text-xs font-medium ${status.color}`}>
+                                  {status.text}
+                                </span>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>

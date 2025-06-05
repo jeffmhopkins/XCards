@@ -1,4 +1,4 @@
-# xCards v1.0.7 - Flash Card Application
+# xCards v1.0.8 - Flash Card Application
 
 - Live at https://jeffmhopkins.github.io/XCards/
 
@@ -7,20 +7,30 @@ A comprehensive flash card application with adaptive study experiences and moder
 ## Features
 
 ### Core Functionality
-- **Deck Management**: Create, edit, delete, and organize flash card decks
-- **Smart Review Sessions**: 20-card spaced repetition algorithm for optimal learning
+- **Deck Management**: Create, edit, delete, and organize flash card decks with auto-selection
+- **Smart Review Sessions**: 20-card spaced repetition algorithm with dynamic status indicators
 - **Multiple Study Modes**: Sequential, shuffled, and difficulty-based study options
-- **Advanced Analytics**: Detailed statistics and progress tracking
-- **Category System**: Organize cards by subject areas
+- **Floating Search**: Real-time card search across all decks with instant results
+- **Spaced Repetition Analytics**: Comprehensive analytics dashboard with card status overview, review scheduling, and learning curve analysis
+- **Advanced Statistics**: Detailed progress tracking with retention rates and interval efficiency metrics
+- **Category System**: Organize cards by subject areas with advanced filtering
 - **Import/Export**: CSV support for data portability
 - **PWA Ready**: Progressive Web App for mobile installation
 
 ### Study Experience
-- **Spaced Repetition**: SM-2 inspired algorithm with intelligent card selection
-- **Adaptive Learning**: Automatic review interval calculation based on performance
-- **Visual Feedback**: Modern UI with glow effects and animations
-- **Session Management**: Track study sessions with accuracy metrics
+- **Spaced Repetition**: SM-2 inspired algorithm with intelligent card selection and priority-based scheduling
+- **Dynamic Status Display**: Real-time indicators showing overdue, due today, and new card counts across entire deck
+- **Adaptive Learning**: Automatic review interval calculation based on performance with exponential scaling
+- **Visual Feedback**: Modern UI with glow effects, animations, and positive completion indicators
+- **Session Management**: Track study sessions with comprehensive accuracy and retention metrics
+- **Filter Integration**: Advanced category, difficulty, and recency filtering with live status updates
 - **Exit Protection**: Save progress when exiting study sessions
+
+### User Interface
+- **Auto-Selection**: One deck is always selected when decks exist for seamless navigation
+- **Floating Search Bar**: Persistent search functionality in deck view for quick card discovery
+- **Card Details Modal**: Comprehensive card information display with deck context
+- **Responsive Layout**: Optimized for mobile and desktop with proper spacing and scrolling
 
 ### Technical Features
 - **Local Storage**: Complete client-side data persistence

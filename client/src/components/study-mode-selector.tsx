@@ -598,7 +598,7 @@ export function StudyModeSelector({ deck, onStartStudy, onCancel }: StudyModeSel
   }, [selectedCategories, selectedRecency, selectedDifficulties, deck.cards, onStartStudy]);
 
   return (
-    <div className="max-w-2xl mx-auto px-4">
+    <div>
       <div className="text-center mb-8">
         <h2 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-600 to-cyan-500 bg-clip-text text-transparent">
           Choose Study Mode

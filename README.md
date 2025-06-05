@@ -1,4 +1,4 @@
-# xCards v1.0.8 - Flash Card Application
+# xCards v1.0.9 - Flash Card Application
 
 - Live at https://jeffmhopkins.github.io/XCards/
 
@@ -11,6 +11,7 @@ A comprehensive flash card application with adaptive study experiences and moder
 - **Smart Review Sessions**: 20-card spaced repetition algorithm with dynamic status indicators
 - **Multiple Study Modes**: Sequential, shuffled, and difficulty-based study options
 - **Floating Search**: Real-time card search across all decks with instant results
+- **Dynamic Status Badges**: Real-time review indicators on each deck showing overdue, due today, and new card counts
 - **Spaced Repetition Analytics**: Comprehensive analytics dashboard with card status overview, review scheduling, and learning curve analysis
 - **Advanced Statistics**: Detailed progress tracking with retention rates and interval efficiency metrics
 - **Category System**: Organize cards by subject areas with advanced filtering
@@ -31,6 +32,10 @@ A comprehensive flash card application with adaptive study experiences and moder
 - **Floating Search Bar**: Persistent search functionality in deck view for quick card discovery
 - **Card Details Modal**: Comprehensive card information display with deck context
 - **Responsive Layout**: Optimized for mobile and desktop with proper spacing and scrolling
+- **Consistent Layout**: Unified content width and spacing across all views (decks, study, statistics)
+- **Enhanced Deck Cards**: Split action buttons for separate deck management and study access
+- **Visual Status Indicators**: Color-coded badges showing deck review status at a glance
+- **Streamlined Interface**: Simplified deck headers with cleaner action organization
 
 ### Technical Features
 - **Local Storage**: Complete client-side data persistence

@@ -1,5 +1,30 @@
 # xCards Changelog
 
+## v1.0.9
+
+### Study Mode Layout Improvements
+- **Fixed Width Consistency**: Resolved study mode selector content width to match deck and statistics views
+- **Unified Container Structure**: Removed duplicate container constraints causing narrow appearance
+- **Consistent Padding**: Applied uniform spacing across all main content sections
+
+### Dynamic Review Status Indicators
+- **Deck Card Status Badges**: Added real-time review status indicators to each deck card
+- **Visual Status Feedback**: Display overdue, due today, and new card counts with colored badges
+- **Completion Indicators**: Show "All caught up!" status when no cards need review
+- **Contextual Information**: Status indicators help users prioritize which decks need attention
+
+### Enhanced Deck Card Actions
+- **Split Action Buttons**: Replaced single "Study Now" button with separate "Deck" and "Study" buttons
+- **Streamlined Interface**: Removed duplicate edit icon from card headers, using bottom buttons instead
+- **Improved Layout**: Better organization of deck information and action controls
+- **Consistent Terminology**: Updated button labels for clearer user understanding
+
+### User Interface Refinements
+- **Right-Aligned Status**: Moved "Ready to study" indicator to align with status badges
+- **Visual Hierarchy**: Improved layout spacing and element positioning
+- **Cleaner Headers**: Simplified deck card headers with only essential controls
+- **Better Button Organization**: Logical grouping of deck management and study actions
+
 ## v1.0.8
 
 ### Floating Search Functionality
